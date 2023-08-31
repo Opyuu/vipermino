@@ -1,0 +1,12 @@
+body{
+    background-color: #00bbdc; /* An's colour */
+    overflow: hidden;
+}
+
+.buttons{
+    background-color: #ff679a; /* Kohane's colour */
+}
+/* This colour scheme works decently */
+.buttons:hover{
+    background-color: #ee1166; /* VBS's colour */
+}
