@@ -1,14 +1,43 @@
+function shuffle(array){
+    let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex > 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
 class gamestate{
     board = [];
     coords = new coord(0, 0)
     piecetype;
     rotation;
+    queue = [];
+    piececount = 0;
+    hold = 0;
 
     constructor(){
         
     }
 
     init(){
+        this.queue = [1, 2, 3, 4, 5, 6, 7];
+        this.queue = shuffle(this.queue);
+        
+        this.queue.concat(this.sevenbag());
+        this.queue.concat(this.sevenbag());
+
+        this.hold = this.queue.shift();
+
         // Initialise board to all 0s
         for(let col = 0; col < 10; col++){
             this.board[col] = [];
@@ -18,6 +47,15 @@ class gamestate{
                 this.board[col][row] = 0;
             }
         }
+    }
+
+    sevenbag(){
+        let bag = [1, 2, 3, 4, 5, 6, 7];
+        bag = shuffle(bag);
+        for(let i = 0; i < 7; i++){
+            this.queue.push(bag[i]);
+        }
+        return bag; 
     }
 
     clearLine(line){ // Clears a singular line
@@ -41,11 +79,11 @@ class gamestate{
 
             if (value != 0){
                 this.clearLine(row);
-                console.log(row, "needs clearing");
                 row--;
             }
         }
     } 
+
 
     place(piece, rot, x, y){
         let xpos = 0;
@@ -55,5 +93,6 @@ class gamestate{
             ypos = y + pieceTable[piece][rot][mino].y;
             this.board[xpos][ypos] = piece;
         }
+        // If piece placed is held piece then the held piece becomes next piece
     }
 }

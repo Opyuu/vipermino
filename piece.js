@@ -13,12 +13,6 @@ class coord{
     }
 }
 
-class rotation{
-    NORTH = 0;
-    EAST = 1;
-    SOUTH = 2;
-    WEST = 3;
-}
 
 let pieceTable = []; // [Piece][Rotation][Mino #] of coord class
 

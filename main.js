@@ -1,6 +1,8 @@
 const worker = new Worker('worker.js');
 
 const game_canvas = document.getElementById("board");
+const queue_canvas = document.getElementById("queue");
+const hold_canvas = document.getElementById("hold");
 let t1 = 0;
 let t2 = 0;
 
@@ -14,7 +16,7 @@ function evaluate(){
 }
 
 function play(){
-    game = new Game(game_canvas);
+    game = new Game(game_canvas, queue_canvas, hold_canvas);
     game.init();
     game.drawframe();
 
@@ -35,10 +37,19 @@ function gameLoop(){
 
 
 worker.onmessage = (e) =>{
-    game.parseMove(e.data.value);
-    console.warn(e.data.value);
-    game.state.clearLines();
-    game.drawframe();
 
-    worker.postMessage({type: 'eval'});
+    game.state.piececount++;
+    if (game.state.piececount % 7 == 0){
+        game.state.sevenbag();
+    }
+
+    game.parseMove(e.data.value); // Move received
+    
+    setTimeout(function (){
+        // Play the move
+        game.state.clearLines();
+        game.drawframe();
+        worker.postMessage({type: 'eval'});
+    }, 500);
+    
 }
