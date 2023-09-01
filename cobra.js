@@ -1129,23 +1129,9 @@ function dbg(text) {
       assert(false, 'Exception thrown, but exception catching is not enabled. Compile with -sNO_DISABLE_EXCEPTION_CATCHING or -sEXCEPTION_CATCHING_ALLOWED=[..] to catch.');
     }
 
-  var nowIsMonotonic = true;;
-  var __emscripten_get_now_is_monotonic = () => nowIsMonotonic;
-
   var _abort = () => {
       abort('native code called abort()');
     };
-
-  function _emscripten_date_now() {
-      return Date.now();
-    }
-
-  var _emscripten_get_now;
-      // Modern environment where performance.now() is supported:
-      // N.B. a shorter form "_emscripten_get_now = performance.now;" is
-      // unfortunately not allowed even in current browsers (e.g. FF Nightly 75).
-      _emscripten_get_now = () => performance.now();
-  ;
 
   var _emscripten_memcpy_big = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
 
@@ -4647,10 +4633,7 @@ function checkIncomingModuleAPI() {
 }
 var wasmImports = {
   __cxa_throw: ___cxa_throw,
-  _emscripten_get_now_is_monotonic: __emscripten_get_now_is_monotonic,
   abort: _abort,
-  emscripten_date_now: _emscripten_date_now,
-  emscripten_get_now: _emscripten_get_now,
   emscripten_memcpy_big: _emscripten_memcpy_big,
   emscripten_resize_heap: _emscripten_resize_heap,
   environ_get: _environ_get,
@@ -4665,6 +4648,7 @@ var asm = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors');
 var _init = Module['_init'] = createExportWrapper('init');
 var _eval = Module['_eval'] = createExportWrapper('eval');
+var _kill = Module['_kill'] = createExportWrapper('kill');
 var ___errno_location = createExportWrapper('__errno_location');
 var _fflush = Module['_fflush'] = createExportWrapper('fflush');
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
