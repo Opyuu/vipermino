@@ -5,6 +5,14 @@ body{
 
 .buttons{
     background-color: #ff679a; /* Kohane's colour */
+    font-size: 20px;
+    width: 150px;
+    height: 80px;
+
+    border: none;
+    border-radius: 7px;
+
+    cursor: pointer;
 }
 /* This colour scheme works decently */
 .buttons:hover{

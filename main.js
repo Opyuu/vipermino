@@ -4,8 +4,7 @@ const game_canvas = document.getElementById("board");
 const queue_canvas = document.getElementById("queue");
 const hold_canvas = document.getElementById("hold");
 
-let t1 = 0;
-let t2 = 0;
+var gameRunning = false;
 
 
 function init(){
@@ -24,6 +23,8 @@ function evaluate(){
 }
 
 function play(){
+    if (gameRunning) return;
+    gameRunning = true;
     game = new Game(game_canvas, queue_canvas, hold_canvas);
     game.init();
     init();
@@ -33,44 +34,42 @@ function play(){
     game.drawHold();
 
     evaluate();
-
-    gameLoop();
 }
 
+// function gameLoop(){
+//     t1 = performance.now();
+//     // Draw frame only when COBRA plays a move
+//     console.log("Game running");
+//     t2 = performance.now()
+//     setTimeout(gameLoop, FPS_DELTA - t2 + t1);
+// }
 
-function gameLoop(){
-    t1 = performance.now();
-    // Draw frame only when COBRA plays a move
-    console.log("Game running");
-    t2 = performance.now()
-    setTimeout(gameLoop, FPS_DELTA - t2 + t1);
+function stopGame(){
+    gameRunning = false;
+    worker.postMessage({type: 'kill'});
+    delete game;
 }
 
 worker.onmessage = (e) =>{
-
+    if (gameRunning == false) return; // Avoids uncaught errors.
     game.state.piececount++;
 
-    game.parseMove(e.data.value); // Move received
+    game.parseMove(e.data.value); // Move received & played. Draws shadow piece
     game.drawHold(); // Update hold 
-    game.drawQueue();
+    game.drawQueue(); // Update queue - piece used
     
-
-    // Shadow piece can be held piece so that'll be rendered. Queue will also change. 
-    
-    setTimeout(function (){
-        // Play the move
+    setTimeout(() => {
+        if (gameRunning == false) return // Is game still running after the timeout?
+        // Actually play the move
         game.state.clearLines();
+
         // Update board & queue
         game.drawframe();
         game.drawQueue();
+
         let queue = 0
-        if (game.state.piececount % 7 == 0){
-            queue = game.state.sevenbag();
-        }
-        else{
-            queue = 0;
-        } // Pass queue into wasm
-        worker.postMessage({type: 'eval', q: queue});
+        if (game.state.piececount % 7 == 0) queue = game.state.sevenbag();
+
+        worker.postMessage({type: 'eval', q: queue}); // Continue evaluating if game hasn't been stopped
     }, 500);
-    
 }

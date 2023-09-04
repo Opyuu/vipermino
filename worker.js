@@ -18,6 +18,9 @@ onmessage = (e) => {
         case 'eval':
             postMessage({type: 'move', value: eval(e.data.q)});
             break;  
+        case 'kill':
+            Module.ccall('kill'); // Frees game memory
+            break;
     }
 }
 

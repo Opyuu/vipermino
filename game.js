@@ -32,7 +32,6 @@ class Game{
     drawframe(){
         this.game_ctx.clearRect(0, 0, 10, 24);
 
-        console.log("drawing frame");
         // Draw background
         this.game_ctx.fillStyle = BACKGROUND_COLOUR;
         this.game_ctx.fillRect(0, 4, 10, 20);
@@ -46,7 +45,7 @@ class Game{
             }
         }
 
-        // // Draw active piece
+        // Draw active piece
         this.game_ctx.fillStyle = PIECE_COLOUR[this.state.queue[0]];
         let row = 3;
         let col = 5;
@@ -57,6 +56,11 @@ class Game{
 
     drawQueue(){
         this.queue_ctx.clearRect(0, 0, 6, 16);
+
+        // Draw queue background
+        this.queue_ctx.fillStyle = BACKGROUND_COLOUR;
+        this.queue_ctx.fillRect(0, 0, 6, 16);
+
         let y_offset = 1;
         // Pieces 1, 2, 3, 4, 5. Piece 0 will be active.
         for (let i = 1; i < 6; i++){
@@ -64,7 +68,7 @@ class Game{
             for (let mino = 0; mino < 4; mino++){
                 let x = pieceTable[this.state.queue[i]][0][mino].x;
                 let y = y_offset - pieceTable[this.state.queue[i]][0][mino].y;
-                this.queue_ctx.fillRect(1 + x, y, 1, 1);
+                this.queue_ctx.fillRect(2 + x, y + 1, 1, 1);
             }
             y_offset += 3;
         }
@@ -81,7 +85,6 @@ class Game{
         }
     }
  
-
     // Functions to communicate with wasm
     parseMove(move){
         let y = move % 100;
@@ -100,7 +103,6 @@ class Game{
         }
 
         this.drawframe(); // Need to draw new current piece when placed
-        // console.warn(piece);
         this.game_ctx.fillStyle = SHADOW_COLOUR[piece];
         for (let mino = 0; mino < 4; mino++){
             let xpos = x + pieceTable[piece][rotation][mino].x;
