@@ -46,10 +46,17 @@ class Game{
             }
         }
 
-        // // Draw shadow
+        // // Draw active piece
+        this.game_ctx.fillStyle = PIECE_COLOUR[this.state.queue[0]];
+        let row = 3;
+        let col = 5;
+        for (let mino = 0; mino < 4; mino++){
+            this.game_ctx.fillRect(col + pieceTable[this.state.queue[0]][0][mino].x, row - pieceTable[this.state.queue[0]][0][mino].y, 1, 1)
+        }
     }
 
     drawQueue(){
+        this.queue_ctx.clearRect(0, 0, 6, 16);
         let y_offset = 1;
         // Pieces 1, 2, 3, 4, 5. Piece 0 will be active.
         for (let i = 1; i < 6; i++){
@@ -85,6 +92,14 @@ class Game{
         move = Math.floor(move / 10);
         let piece = move % 10;
 
+        if (piece == this.state.hold){
+            this.state.hold = this.state.queue.shift(); // If the piece placed was the hold piece, swap hold with next piece
+        }
+        else{
+           this.state.queue.shift();
+        }
+
+        this.drawframe(); // Need to draw new current piece when placed
         // console.warn(piece);
         this.game_ctx.fillStyle = SHADOW_COLOUR[piece];
         for (let mino = 0; mino < 4; mino++){
@@ -95,4 +110,5 @@ class Game{
         }
         this.state.place(piece, rotation, x, y);
     }
+
 }

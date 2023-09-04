@@ -32,12 +32,7 @@ class gamestate{
     init(){
         this.queue = [1, 2, 3, 4, 5, 6, 7];
         this.queue = shuffle(this.queue);
-        
-        this.queue.concat(this.sevenbag());
-        this.queue.concat(this.sevenbag());
-
-        this.hold = this.queue.shift();
-
+    
         // Initialise board to all 0s
         for(let col = 0; col < 10; col++){
             this.board[col] = [];
@@ -49,13 +44,28 @@ class gamestate{
         }
     }
 
-    sevenbag(){
+    encodequeue(){ // Used at start of game
+        let queue = 0;
+        for (let i = 6; i >= 0; i--){
+            queue *= 8;
+            queue += this.queue[i];
+        }
+        return queue;
+    }
+
+    sevenbag(){ // Generate a new queue
         let bag = [1, 2, 3, 4, 5, 6, 7];
+        let queue = 0;
         bag = shuffle(bag);
         for(let i = 0; i < 7; i++){
             this.queue.push(bag[i]);
         }
-        return bag; 
+
+        for (let i = 6; i >= 0; i--){
+            queue *= 8;
+            queue += bag[i];
+        }
+        return queue;
     }
 
     clearLine(line){ // Clears a singular line
@@ -93,6 +103,5 @@ class gamestate{
             ypos = y + pieceTable[piece][rot][mino].y;
             this.board[xpos][ypos] = piece;
         }
-        // If piece placed is held piece then the held piece becomes next piece
     }
 }
