@@ -29,6 +29,38 @@ class Game{
         this.hold_ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
     }
 
+    drawGrid(){
+        this.game_ctx.lineWidth = GRID_SIZE/BLOCK_SIZE;
+        this.game_ctx.strokeStyle = GRID_COLOUR;
+        this.game_ctx.beginPath();
+        for (let i = 1; i < COLS; i++){ //horizontal
+            this.game_ctx.moveTo(i,4);
+            this.game_ctx.lineTo(i,RENDER_ROWS);
+        }
+        for (let j = RENDER_ROWS - 1; j > 3; j--){ //vertical
+            this.game_ctx.moveTo(0,j);
+            this.game_ctx.lineTo(10,j);
+        }
+        this.game_ctx.closePath();
+        this.game_ctx.stroke();
+    }
+
+    drawBorder(){
+        //draw border lines
+        this.game_ctx.lineWidth = BORDER_SIZE/BLOCK_SIZE;
+        this.game_ctx.strokeStyle = BORDER_COLOUR;
+        //this.ctx.strokeRect(0, 4, 10, 20);
+        this.game_ctx.beginPath();
+        this.game_ctx.moveTo(0,4);
+        this.game_ctx.lineTo(0,24);
+        this.game_ctx.moveTo(0,24);
+        this.game_ctx.lineTo(10,24);
+        this.game_ctx.moveTo(10,24);
+        this.game_ctx.lineTo(10,4);
+        this.game_ctx.closePath();
+        this.game_ctx.stroke();
+    }
+
     drawframe(){
         this.game_ctx.clearRect(0, 0, 10, 24);
 
@@ -36,11 +68,18 @@ class Game{
         this.game_ctx.fillStyle = BACKGROUND_COLOUR;
         this.game_ctx.fillRect(0, 4, 10, 20);
 
+        this.drawGrid();
+        
+        let clearRows = this.state.getLines();
         // Draw board
         for (let col = 0; col < COLS; col++){
             for (let row = 0; row < RENDER_ROWS; row++){
                 if (this.state.board[col][row] == 0) continue;
-                this.game_ctx.fillStyle = PIECE_COLOUR[this.state.board[col][row]];
+                if (clearRows.includes(row)){
+                    this.game_ctx.fillStyle = LINECLEAR_COLOUR[this.state.board[col][row]];
+                }else{
+                    this.game_ctx.fillStyle = PIECE_COLOUR[this.state.board[col][row]];
+                }
                 this.game_ctx.fillRect(col, RENDER_ROWS - row - 1, 1, 1);
             }
         }
@@ -52,6 +91,9 @@ class Game{
         for (let mino = 0; mino < 4; mino++){
             this.game_ctx.fillRect(col + pieceTable[this.state.queue[0]][0][mino].x, row - pieceTable[this.state.queue[0]][0][mino].y, 1, 1)
         }
+
+        this.drawBorder();
+        
     }
 
     drawQueue(){
@@ -94,6 +136,9 @@ class Game{
         let rotation = move % 10;
         move = Math.floor(move / 10);
         let piece = move % 10;
+        move = Math.floor(move/10);
+        let attack = move % 100;
+        game.state.attack += attack;
 
         if (piece == this.state.hold){
             this.state.hold = this.state.queue.shift(); // If the piece placed was the hold piece, swap hold with next piece
@@ -101,15 +146,20 @@ class Game{
         else{
            this.state.queue.shift();
         }
-
+        this.state.place(piece, rotation, x, y);
         this.drawframe(); // Need to draw new current piece when placed
-        this.game_ctx.fillStyle = SHADOW_COLOUR[piece];
+        this.state.unplace(piece, rotation, x, y);
         for (let mino = 0; mino < 4; mino++){
             let xpos = x + pieceTable[piece][rotation][mino].x;
             let ypos = y + pieceTable[piece][rotation][mino].y;
 
+            this.game_ctx.clearRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
+            this.game_ctx.fillStyle = BACKGROUND_COLOUR;
+            this.game_ctx.fillRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
+            this.game_ctx.fillStyle = SHADOW_COLOUR[piece];
             this.game_ctx.fillRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
         }
+        this.drawBorder();
         this.state.place(piece, rotation, x, y);
     }
 

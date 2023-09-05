@@ -16,7 +16,12 @@ onmessage = (e) => {
             init(e.data.v1, e.data.v2, e.data.v3);
             break;
         case 'eval':
-            postMessage({type: 'move', value: eval(e.data.q)});
+            let t1 = performance.now();
+            let data = eval(e.data.q);
+            let t2 = performance.now();
+            let timetaken = t2 - t1;
+            postMessage({type: 'move', value: data, time: timetaken})
+            // postMessage({type: 'move', value: eval(e.data.q)});
             break;  
         case 'kill':
             Module.ccall('kill'); // Frees game memory

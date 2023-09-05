@@ -23,6 +23,7 @@ class gamestate{
     rotation;
     queue = [];
     piececount = 0;
+    attack = 0;
     hold = 0;
 
     constructor(){
@@ -80,6 +81,22 @@ class gamestate{
         }
     }
 
+    // Highlight lines about to be cleared
+    getLines(){
+        let lines = [];
+        for (let row = 0; row < 40; row++){
+            let value = 1;
+            for (let col = 0; col < 10; col++){
+                value *= this.board[col][row]
+            }
+            
+            if (value != 0){
+                lines.push(row);
+            }
+        }
+        return lines;
+    }
+
     clearLines(){// Clears multiple lines
         for (let row = 0; row < 40; row++){
             let value = 1;
@@ -102,6 +119,15 @@ class gamestate{
             xpos = x + pieceTable[piece][rot][mino].x;
             ypos = y + pieceTable[piece][rot][mino].y;
             this.board[xpos][ypos] = piece;
+        }
+    }
+    unplace(piece, rot, x, y){
+        let xpos = 0;
+        let ypos = 0;
+        for (let mino = 0; mino < 4; mino++){
+            xpos = x + pieceTable[piece][rot][mino].x;
+            ypos = y + pieceTable[piece][rot][mino].y;
+            this.board[xpos][ypos] = 0;
         }
     }
 }

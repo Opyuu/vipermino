@@ -1,5 +1,5 @@
 body{
-    background-color: #00bbdc; /* An's colour */
+    background-color: black; /* An's colour */
     overflow: hidden;
 }
 
@@ -17,4 +17,36 @@ body{
 /* This colour scheme works decently */
 .buttons:hover{
     background-color: #ee1166; /* VBS's colour */
+}
+
+.counters{
+    font-size: 40px;
+    color: white;
+}
+
+#stage{
+    display: flex;
+}
+
+#right{
+    text-align: center;
+    flex: 1;
+    justify-content: center;
+    width: 20vh;
+    height: 100vh;
+    align-items: center;
+    padding: auto;
+    padding-top: 20vh;
+}
+
+#centre{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-right: 5vh;
+    margin-left: 25vh;
+    width: 50vh;
+    height: 85vh;
+    padding: auto;
+    bottom: 10vh;
 }

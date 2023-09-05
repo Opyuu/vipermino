@@ -9,11 +9,22 @@
     </head>
 
     <body>
-        <button class="buttons" onclick="play()">Play</button>
-        <button class="buttons" onclick="stopGame()">Stop & Reset</button>
-        <canvas id="hold"></canvas>
-        <canvas id="board"></canvas>
-        <canvas id="queue"></canvas>
+        <div id="stage">
+            <div id="centre">
+                <canvas id="hold"></canvas>
+                <canvas id="board"></canvas>
+                <canvas id="queue"></canvas>
+            </div>
+            <div id="right">
+                <button class="buttons" onclick="play()">Play</button><br>
+                <button class="buttons" onclick="stopGame()">Stop & Reset</button><br>
+                <p id="PPS" class="counters">PPS COUNTER</p><br>
+                <p id="APM" class="counters">APM COUNTER</p><br>
+                <p id="APP" class="counters">APP COUNTER</p>
+            </div>
+        </div>
+        
+
     </body>
 
     <script type="text/javascript" src="constants.js"></script>

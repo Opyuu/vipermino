@@ -3,8 +3,12 @@ const worker = new Worker('worker.js');
 const game_canvas = document.getElementById("board");
 const queue_canvas = document.getElementById("queue");
 const hold_canvas = document.getElementById("hold");
+const pps = document.getElementById("pps");
+
 
 var gameRunning = false;
+var startTime;
+var moveDelay = 500;
 
 
 function init(){
@@ -15,6 +19,7 @@ function init(){
     // Call seven bag 2 more times and pass those to wasm
     // Pass q1 q2 q3
     worker.postMessage({type: 'init', v1: q1, v2: q2, v3: q3});
+    startTime = performance.now();
     game.state.hold = game.state.queue.shift(); // Move first piece to hold
 }
 
@@ -34,15 +39,29 @@ function play(){
     game.drawHold();
 
     evaluate();
+    gameLoop();
 }
 
-// function gameLoop(){
-//     t1 = performance.now();
-//     // Draw frame only when COBRA plays a move
-//     console.log("Game running");
-//     t2 = performance.now()
-//     setTimeout(gameLoop, FPS_DELTA - t2 + t1);
-// }
+function an(){
+    document.body.style.backgroundColor = '#00bbdc';
+}
+
+function gameLoop(){
+    t1 = performance.now();
+    let time = (t1 - startTime) / 1000;
+    // Draw frame only when COBRA plays a move
+
+    // Update PPS counter
+    document.getElementById("PPS").innerHTML = "PPS: " + (game.state.piececount / time).toFixed(2);
+    document.getElementById("APM").innerHTML = "APM: " + (game.state.attack * 60 / time).toFixed(2);
+    document.getElementById("APP").innerHTML = "APP: " + (game.state.attack / game.state.piececount).toFixed(3);
+
+
+    // Update APM counter
+    // console.log("Game running");
+    t2 = performance.now()
+    if(gameRunning) setTimeout(gameLoop, FPS_DELTA - t2 + t1);
+}
 
 function stopGame(){
     gameRunning = false;
@@ -58,6 +77,7 @@ worker.onmessage = (e) =>{
     game.drawHold(); // Update hold 
     game.drawQueue(); // Update queue - piece used
     
+    let delay = Math.max(0, moveDelay - e.data.time);
     setTimeout(() => {
         if (gameRunning == false) return // Is game still running after the timeout?
         // Actually play the move
@@ -71,5 +91,5 @@ worker.onmessage = (e) =>{
         if (game.state.piececount % 7 == 0) queue = game.state.sevenbag();
 
         worker.postMessage({type: 'eval', q: queue}); // Continue evaluating if game hasn't been stopped
-    }, 500);
+    }, delay);
 }
