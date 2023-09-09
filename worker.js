@@ -1,7 +1,6 @@
 importScripts('cobra.js');
 
 function eval(q){
-    console.warn("Evaluating!")
     return Module.ccall('eval', 'number', ['number'], [q]);
 }
 

@@ -4,12 +4,14 @@ const game_canvas = document.getElementById("board");
 const queue_canvas = document.getElementById("queue");
 const hold_canvas = document.getElementById("hold");
 const pps = document.getElementById("pps");
+const slider = document.getElementById("PPSSlider");
+const output = document.getElementById("PPSlimit");
 
 
 var gameRunning = false;
 var startTime;
-var moveDelay = 500;
-
+var moveDelay = 0;
+var showSetting = false;
 
 function init(){
     let q1 = game.state.encodequeue();
@@ -42,6 +44,31 @@ function play(){
     gameLoop();
 }
 
+function toggleSetting(){
+    let menu = document.getElementById("settings");
+    if (!showSetting){
+        showSetting = true;
+        menu.style.display = "block";
+    }
+    else{
+        showSetting = false;
+        menu.style.display = "none";
+    }
+}
+
+// Update the current slider value (each time you drag the slider handle)
+slider.oninput = function() {
+    if (this.value == 15){
+        output.innerHTML = "PPS limit: Uncapped";
+        moveDelay = 0;
+    } 
+    else{
+        output.innerHTML = "PPS limit: " + this.value;
+        moveDelay = 1000 / this.value;
+    }
+}
+
+
 function an(){
     document.body.style.backgroundColor = '#00bbdc';
 }
@@ -51,14 +78,12 @@ function gameLoop(){
     let time = (t1 - startTime) / 1000;
     // Draw frame only when COBRA plays a move
 
-    // Update PPS counter
-    document.getElementById("PPS").innerHTML = "PPS: " + (game.state.piececount / time).toFixed(2);
-    document.getElementById("APM").innerHTML = "APM: " + (game.state.attack * 60 / time).toFixed(2);
-    document.getElementById("APP").innerHTML = "APP: " + (game.state.attack / game.state.piececount).toFixed(3);
+    // Update counters
+    document.getElementById("Timer").innerHTML = "Time: " + time.toFixed(3);
+    document.getElementById("PPS").innerHTML = game.state.piececount + " | " + (game.state.piececount / time).toFixed(2) + " PPS";
+    document.getElementById("APM").innerHTML = game.state.attack + " | " + (game.state.attack * 60 / time).toFixed(2) + " APM";
+    document.getElementById("APP").innerHTML =(game.state.attack / game.state.piececount).toFixed(3) + " APP";
 
-
-    // Update APM counter
-    // console.log("Game running");
     t2 = performance.now()
     if(gameRunning) setTimeout(gameLoop, FPS_DELTA - t2 + t1);
 }
@@ -76,7 +101,6 @@ worker.onmessage = (e) =>{
     game.parseMove(e.data.value); // Move received & played. Draws shadow piece
     game.drawHold(); // Update hold 
     game.drawQueue(); // Update queue - piece used
-    
     let delay = Math.max(0, moveDelay - e.data.time);
     setTimeout(() => {
         if (gameRunning == false) return // Is game still running after the timeout?

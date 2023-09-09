@@ -18,9 +18,21 @@
             <div id="right">
                 <button class="buttons" onclick="play()">Play</button><br>
                 <button class="buttons" onclick="stopGame()">Stop & Reset</button><br>
+                <button class="buttons" onclick="toggleSetting()">Settings</button>
+                <p id="Timer" class="counters">TIMER</p><br>
                 <p id="PPS" class="counters">PPS COUNTER</p><br>
                 <p id="APM" class="counters">APM COUNTER</p><br>
                 <p id="APP" class="counters">APP COUNTER</p>
+            </div>
+
+            <div id="settings">
+                <p class="settingcontent">SETTINGS</p>
+                <label class="settingcontent" for="PPSSlider" id="PPSlimit">PPS Limit: Uncapped</label>
+                <div class="slidercontainer">
+                    <input type="range" min="1" max="15" value="15" class="slider" id="PPSSlider">
+                </div>
+                <br><br>
+                <button class="buttons" onclick="toggleSetting()">Save & Close</button>
             </div>
         </div>
         
