@@ -11,7 +11,6 @@ function init(q1, q2, q3){
 onmessage = (e) => {
     switch(e.data.type){
         case 'init':
-            console.log("initialising");
             init(e.data.v1, e.data.v2, e.data.v3);
             break;
         case 'eval':

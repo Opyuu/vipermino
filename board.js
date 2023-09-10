@@ -81,7 +81,6 @@ class gamestate{
         }
     }
 
-    // Highlight lines about to be cleared
     getLines(){
         let lines = [];
         for (let row = 0; row < 40; row++){
@@ -111,7 +110,6 @@ class gamestate{
         }
     } 
 
-
     place(piece, rot, x, y){
         let xpos = 0;
         let ypos = 0;
@@ -121,6 +119,7 @@ class gamestate{
             this.board[xpos][ypos] = piece;
         }
     }
+
     unplace(piece, rot, x, y){
         let xpos = 0;
         let ypos = 0;

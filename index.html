@@ -5,15 +5,13 @@
     <head>
         <title>Vipermino</title>
         <link rel="stylesheet" href="styles.css">
-        <link rel="icon" href="icon.png">
+        <link rel="icon" href="assets/images/icon.png">
     </head>
 
     <body>
         <div id="stage">
             <div id="centre">
-                <canvas id="hold"></canvas>
-                <canvas id="board"></canvas>
-                <canvas id="queue"></canvas>
+                <div id="boardnew"></div>
             </div>
             <div id="right">
                 <button class="buttons" onclick="play()">Play</button><br>
@@ -39,6 +37,7 @@
 
     </body>
 
+    <script type="text/javascript" src="assets/js/pixi.min.js"></script>
     <script type="text/javascript" src="constants.js"></script>
     <script type="text/javascript" src="piece.js"></script>
     <script type="text/javascript" src="board.js"></script>

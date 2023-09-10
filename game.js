@@ -1,132 +1,208 @@
 class Game{
-    constructor(game_canvas, queue_canvas, hold_canvas){
+    constructor(app){
         this.state = new gamestate();
+        this.app = app;
+        this.boardGraphics = new PIXI.Graphics();
+        this.gridGraphics = new PIXI.Graphics();
+        this.queueGraphics = new PIXI.Graphics();
+        this.holdGraphics = new PIXI.Graphics();
+        this.activeGraphics = new PIXI.Graphics(); // Includes active piece & piece shadow
+    }
 
-        this.game_canvas = game_canvas; // Canvas for rendering
-        this.game_ctx = game_canvas.getContext("2d");
-        
+    destroy(){
+        this.boardGraphics.clear();
+        this.gridGraphics.clear();
+        this.queueGraphics.clear();
+        this.holdGraphics.clear();
+        this.activeGraphics.clear();
 
-        this.queue_canvas = queue_canvas;
-        this.queue_ctx = queue_canvas.getContext("2d");
+        this.app.stage.removeChild(this.boardGraphics);
+        this.app.stage.removeChild(this.gridGraphics);
+        this.app.stage.removeChild(this.queueGraphics);
+        this.app.stage.removeChild(this.holdGraphics);
+        this.app.stage.removeChild(this.activeGraphics);
 
-        this.hold_canvas = hold_canvas;
-        this.hold_ctx = hold_canvas.getContext("2d");
-        // this.counterinfo for things like counters and attacks
     }
 
     init(){
         game.state.init();
-        this.game_ctx.canvas.width = COLS * BLOCK_SIZE;
-        this.game_ctx.canvas.height = RENDER_ROWS * BLOCK_SIZE;
-        this.game_ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
+        this.boardGraphics.position.set(6 * BLOCK_SIZE, 0);
+        this.boardGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.gridGraphics.position.set(6 * BLOCK_SIZE, 0);
+        this.gridGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.holdGraphics.position.set(0, 4 * BLOCK_SIZE);
+        this.holdGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
 
-        this.queue_ctx.canvas.width = 6 * BLOCK_SIZE;
-        this.queue_ctx.canvas.height = 16 * BLOCK_SIZE;
-        this.queue_ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
+        this.queueGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.queueGraphics.position.set( (6 + COLS) * BLOCK_SIZE, 4 * BLOCK_SIZE);
 
-        this.hold_ctx.canvas.width = 6 * BLOCK_SIZE;
-        this.hold_ctx.canvas.height = 6 * BLOCK_SIZE;
-        this.hold_ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
+        this.activeGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.activeGraphics.position.set(6 * BLOCK_SIZE, 0);
+
+        this.state.hold = this.state.queue[0];
+        this.drawGrid();
+        this.drawframe();
+        this.drawHold();
+        this.drawQueue();
     }
 
     drawGrid(){
-        this.game_ctx.lineWidth = GRID_SIZE/BLOCK_SIZE;
-        this.game_ctx.strokeStyle = GRID_COLOUR;
-        this.game_ctx.beginPath();
-        for (let i = 1; i < COLS; i++){ //horizontal
-            this.game_ctx.moveTo(i,4);
-            this.game_ctx.lineTo(i,RENDER_ROWS);
+        // Draw background?
+        this.gridGraphics.lineStyle(GRID_SIZE/BLOCK_SIZE, GRID_COLOUR);
+
+        for (let i = 1; i < COLS; i++){ // Horizontal
+            this.gridGraphics.moveTo(i, 4);
+            this.gridGraphics.lineTo(i, RENDER_ROWS);
         }
-        for (let j = RENDER_ROWS - 1; j > 3; j--){ //vertical
-            this.game_ctx.moveTo(0,j);
-            this.game_ctx.lineTo(10,j);
+        for (let j = RENDER_ROWS - 1; j > 3; j--){ // Vertical
+            this.gridGraphics.moveTo(0, j);
+            this.gridGraphics.lineTo(10, j);
         }
-        this.game_ctx.closePath();
-        this.game_ctx.stroke();
+
+        this.app.stage.addChild(this.gridGraphics);
     }
 
     drawBorder(){
-        //draw border lines
-        this.game_ctx.lineWidth = BORDER_SIZE/BLOCK_SIZE;
-        this.game_ctx.strokeStyle = BORDER_COLOUR;
-        //this.ctx.strokeRect(0, 4, 10, 20);
-        this.game_ctx.beginPath();
-        this.game_ctx.moveTo(0,4);
-        this.game_ctx.lineTo(0,24);
-        this.game_ctx.moveTo(0,24);
-        this.game_ctx.lineTo(10,24);
-        this.game_ctx.moveTo(10,24);
-        this.game_ctx.lineTo(10,4);
-        this.game_ctx.closePath();
-        this.game_ctx.stroke();
+        let offset = (BORDER_SIZE/BLOCK_SIZE) / 2; // Line starts from centre, need to offset so the drawing is correct
+        this.boardGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
+        this.boardGraphics.moveTo(0, RENDER_ROWS + offset);
+        this.boardGraphics.lineTo(0, 4);
+
+        this.boardGraphics.moveTo(0, RENDER_ROWS);
+        this.boardGraphics.lineTo(COLS, RENDER_ROWS);
+
+        this.boardGraphics.moveTo(COLS, RENDER_ROWS + offset);
+        this.boardGraphics.lineTo(COLS, 4);
     }
 
     drawframe(){
-        this.game_ctx.clearRect(0, 0, 10, 24);
+        // Remove graphics from app so it acts as a buffer
+        this.app.stage.removeChild(this.boardGraphics);
+        this.boardGraphics.clear();
 
-        // Draw background
-        this.game_ctx.fillStyle = BACKGROUND_COLOUR;
-        this.game_ctx.fillRect(0, 4, 10, 20);
-
-        this.drawGrid();
-        
-        let clearRows = this.state.getLines();
         // Draw board
-        for (let col = 0; col < COLS; col++){
-            for (let row = 0; row < RENDER_ROWS; row++){
-                if (this.state.board[col][row] == 0) continue;
-                if (clearRows.includes(row)){
-                    this.game_ctx.fillStyle = LINECLEAR_COLOUR[this.state.board[col][row]];
-                }else{
-                    this.game_ctx.fillStyle = PIECE_COLOUR[this.state.board[col][row]];
-                }
-                this.game_ctx.fillRect(col, RENDER_ROWS - row - 1, 1, 1);
-            }
-        }
-
-        // Draw active piece
-        this.game_ctx.fillStyle = PIECE_COLOUR[this.state.queue[0]];
-        let row = 3;
-        let col = 5;
-        for (let mino = 0; mino < 4; mino++){
-            this.game_ctx.fillRect(col + pieceTable[this.state.queue[0]][0][mino].x, row - pieceTable[this.state.queue[0]][0][mino].y, 1, 1)
-        }
-
+        this.drawBoard();
         this.drawBorder();
-        
+        this.drawActive();
+
+        this.app.stage.addChild(this.boardGraphics);  
+    }
+
+    drawActive(){
+        this.activeGraphics.clear();
+
+        this.activeGraphics.beginFill(PIECE_COLOUR[this.state.queue[0]]);
+        let row = 2;
+        let col = 4;
+        for (let mino = 0; mino < 4; mino++){
+            let x = col + pieceTable[this.state.queue[0]][0][mino].x
+            let y = row - pieceTable[this.state.queue[0]][0][mino].y
+            this.activeGraphics.drawRect(x, y, 1, 1);
+        }
+    }
+
+    drawShadow(piece, rotation, x, y){
+        for (let mino = 0; mino < 4; mino++){
+            let xpos = x + pieceTable[piece][rotation][mino].x;
+            let ypos = y + pieceTable[piece][rotation][mino].y;
+            this.activeGraphics.beginFill(0x000000);
+            this.activeGraphics.drawRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
+            this.activeGraphics.endFill();
+
+            this.activeGraphics.beginTextureFill({texture: SHADOW_TEXTURE[piece], matrix: scalingMatrix});
+            this.activeGraphics.drawRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
+            this.activeGraphics.endFill();
+        }
+
+    }
+
+
+    drawBoard(){
+        let clearRows = this.state.getLines();
+        // If line is in clear rows, draw something fancy over it
+        for (let row = 0; row < RENDER_ROWS; row++){
+            for (let col = 0; col < COLS; col++){
+                if (this.state.board[col][row] == 0) continue;
+
+                let cellX = col;
+                let cellY = (RENDER_ROWS - row - 1);
+                
+                let cellColor = PIECE_COLOUR[this.state.board[col][row]];
+                if (clearRows.includes(row)) cellColor = 0xFFFFFF;
+    
+                this.boardGraphics.beginFill(cellColor);
+                this.boardGraphics.drawRect(cellX, cellY, 1, 1);
+                this.boardGraphics.endFill();
+            }
+        } 
     }
 
     drawQueue(){
-        this.queue_ctx.clearRect(0, 0, 6, 16);
+        this.app.stage.removeChild(this.queueGraphics);
+        this.queueGraphics.clear();
 
-        // Draw queue background
-        this.queue_ctx.fillStyle = BACKGROUND_COLOUR;
-        this.queue_ctx.fillRect(0, 0, 6, 16);
+        let offset = (BORDER_SIZE/BLOCK_SIZE) / 2;
+        let minoYPos = 1;
 
-        let y_offset = 1;
-        // Pieces 1, 2, 3, 4, 5. Piece 0 will be active.
+        // Loop through every piece in queue
         for (let i = 1; i < 6; i++){
-            this.queue_ctx.fillStyle = PIECE_COLOUR[this.state.queue[i]];
+            this.queueGraphics.beginFill(PIECE_COLOUR[this.state.queue[i]]);
+            let xoffset = this.state.queue[i] == 1 | this.state.queue[i] == 2 ? 2 : 2.5; // Offsets for centering individual pieces
+            let yoffset = this.state.queue[i] == 1 ? 0.5 : 1; 
             for (let mino = 0; mino < 4; mino++){
-                let x = pieceTable[this.state.queue[i]][0][mino].x;
-                let y = y_offset - pieceTable[this.state.queue[i]][0][mino].y;
-                this.queue_ctx.fillRect(2 + x, y + 1, 1, 1);
+                let x = pieceTable[this.state.queue[i]][0][mino].x + xoffset;
+                let y = minoYPos - pieceTable[this.state.queue[i]][0][mino].y + yoffset;
+                this.queueGraphics.drawRect(x, y, 1, 1);
             }
-            y_offset += 3;
+            minoYPos += 3;
         }
+
+        // Draw borders
+        this.queueGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
+        this.queueGraphics.moveTo(0 - offset, 0);
+        this.queueGraphics.lineTo(6, 0);
+        this.queueGraphics.moveTo(6 - offset, 0);
+        this.queueGraphics.lineTo(6 - offset, 16);
+        this.queueGraphics.moveTo(6, 16);
+        this.queueGraphics.lineTo(0, 16);
+
+        this.app.stage.addChild(this.queueGraphics);
     }
 
     drawHold(){
-        this.hold_ctx.clearRect(0, 0, 4, 4);
+        this.app.stage.removeChild(this.holdGraphics);
+        this.holdGraphics.clear();
 
-        this.hold_ctx.fillStyle = PIECE_COLOUR[this.state.hold];
-        for (let mino = 0; mino < 4; mino ++){
-            let x = 1 + pieceTable[this.state.hold][0][mino].x;
-            let y = 1 - pieceTable[this.state.hold][0][mino].y;
-            this.hold_ctx.fillRect(x, y, 1, 1);
+        this.holdGraphics.beginFill(PIECE_COLOUR[this.state.hold]);
+
+        let xoffset = this.state.hold == 1 | this.state.hold == 2 ? 2 : 2.5;
+        let yoffset = this.state.hold == 1 ? 0.5 : 1;
+
+        for (let mino = 0; mino < 4; mino++){
+            let x = pieceTable[this.state.hold][0][mino].x + xoffset; 
+            let y = 1 - pieceTable[this.state.hold][0][mino].y + yoffset;
+
+            this.holdGraphics.drawRect(x, y, 1, 1);
         }
+
+        // Lines
+        let offset = (BORDER_SIZE/BLOCK_SIZE) / 2;
+
+        // Draw borders
+        this.holdGraphics.lineStyle(BORDER_SIZE / BLOCK_SIZE, BORDER_COLOUR);
+        this.holdGraphics.moveTo(0, 0);
+        this.holdGraphics.lineTo(6 + offset, 0);
+        this.holdGraphics.moveTo(6, 0);
+        this.holdGraphics.lineTo(6, 4);
+        this.holdGraphics.moveTo(6, 4);
+        this.holdGraphics.lineTo(0, 4);
+        this.holdGraphics.moveTo(offset, 4);
+        this.holdGraphics.lineTo(offset, 0);
+
+        this.app.stage.addChild(this.holdGraphics);
     }
- 
+    
+
     // Functions to communicate with wasm
     parseMove(move){
         let y = move % 100;
@@ -146,20 +222,17 @@ class Game{
         else{
            this.state.queue.shift();
         }
-        this.state.place(piece, rotation, x, y);
-        this.drawframe(); // Need to draw new current piece when placed
-        this.state.unplace(piece, rotation, x, y);
-        for (let mino = 0; mino < 4; mino++){
-            let xpos = x + pieceTable[piece][rotation][mino].x;
-            let ypos = y + pieceTable[piece][rotation][mino].y;
 
-            this.game_ctx.clearRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
-            this.game_ctx.fillStyle = BACKGROUND_COLOUR;
-            this.game_ctx.fillRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
-            this.game_ctx.fillStyle = SHADOW_COLOUR[piece];
-            this.game_ctx.fillRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
-        }
+        this.state.place(piece, rotation, x, y);
+        this.drawframe(); // Draw line clears
+        this.state.unplace(piece, rotation, x, y);
+
+        this.app.stage.removeChild(this.activeGraphics);
+        this.drawShadow(piece, rotation, x, y);
+        this.app.stage.addChild(this.activeGraphics);
+    
         this.drawBorder();
+
         this.state.place(piece, rotation, x, y);
     }
 

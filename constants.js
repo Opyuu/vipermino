@@ -3,18 +3,27 @@ const ROWS = 40;
 const RENDER_ROWS = 24;
 const SPAWNROW = 23;
 
-const BLOCK_SIZE = 30;
+const BLOCK_SIZE = 32;
 const BORDER_SIZE = 6;
 const GRID_SIZE = 2;
 
 const BACKGROUND_COLOUR = "#000000";
-const PIECE_COLOUR = ["#000000", "#00FFE1", "#FFEA00", "#B300FF", "#FF8800" , "#0008FF", "#00FF15", "#FF000D", "#8F8F8F"];
-const SHADOW_COLOUR = ["rgba(0, 0, 0, 1)", "rgba(0, 255, 225, 0.5)", "rgba(255, 234, 0, 0.5)", "rgba(175, 0, 255, 0.5)", "rgba(255, 136, 0, 0.5)" , "rgba(0, 8, 255, 0.5)", "rgba(0, 255, 21, 0.5)", "rgba(255, 0, 13, 0.5)", "#8F8F8F"]
-const LINECLEAR_COLOUR = ["#00FF00", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"];
+const PIECE_COLOUR = [0x000000, 0x00FFE1, 0xFFEA00, 0xB300FF, 0xFF8800, 0x0008FF, 0x00FF15, 0xFF000D, 0x8F8F8F];
+const LINECLEAR_COLOUR = 0xFFFFFF;
 const PIECE_CHAR = ['-', 'I', 'O', 'T', 'L', 'J', 'S', 'Z'];
-const GRID_COLOUR = "rgba(0, 30, 130, 1)";
-const BORDER_COLOUR = "#FFFFFF";
+const GRID_COLOUR = 0x001e82;
+const BORDER_COLOUR = 0xFFFFFF;
 
+const baseTexture = PIXI.Texture.from('assets/sprites/shadowsprites.png')
+const SHADOW_TEXTURE = [];
+for(let i = 0; i < 8; i++){
+    const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
+    let texture = new PIXI.Texture(baseTexture, show);
+    // const texture = PIXI.Texture.fromImage('assets/sprites/shadowsprites.png', show);
+    SHADOW_TEXTURE.push(texture);
+}
+
+const scalingMatrix = new PIXI.Matrix();
+scalingMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
 
 const FPS_DELTA = 1000/60;
-const PIECES = [1, 2, 3, 4, 5, 6, 7];
