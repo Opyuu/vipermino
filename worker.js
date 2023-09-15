@@ -1,7 +1,7 @@
 importScripts('cobra.js');
 
-function eval(q){
-    return Module.ccall('eval', 'number', ['number'], [q]);
+function eval(q, d){
+    return Module.ccall('eval', 'number', ['number', 'number'], [q, d]);
 }
 
 function init(q1, q2, q3){
@@ -15,7 +15,7 @@ onmessage = (e) => {
             break;
         case 'eval':
             let t1 = performance.now();
-            let data = eval(e.data.q);
+            let data = eval(e.data.q, e.data.d);
             let t2 = performance.now();
             let timetaken = t2 - t1;
             postMessage({type: 'move', value: data, time: timetaken})

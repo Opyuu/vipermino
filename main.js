@@ -1,8 +1,10 @@
 const worker = new Worker('worker.js');
 
 const pps = document.getElementById("pps");
-const slider = document.getElementById("PPSSlider");
-const output = document.getElementById("PPSlimit");
+const PPSslider = document.getElementById("PPSSlider");
+const ppsOutput = document.getElementById("PPSlimit");
+const depthSlider = document.getElementById("DepthSlider");
+const depthOutput = document.getElementById("Depth");
 
 /* Plans:
     make sure to only update the right parts of the canvas that requires updating
@@ -17,14 +19,15 @@ const app = new PIXI.Application({
     resolution: 1,
 });
 
-document.getElementById('boardnew').appendChild(app.view);
+document.getElementById('board').appendChild(app.view);
 
 game = new Game(app);
 game.init();
 
 var gameRunning = false;
 var startTime;
-var moveDelay = 0;
+var moveDelay = 1000/3;
+var depth = 10;
 var showSetting = false;
 
 function init(){
@@ -46,7 +49,7 @@ function play(){
     game.drawQueue();
     game.drawHold();
 
-    worker.postMessage({type: 'eval', q: 0});
+    worker.postMessage({type: 'eval', q: 0, d: depth});
     gameLoop();
 }
 
@@ -81,15 +84,20 @@ function toggleSetting(){
 }
 
 // Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
+PPSslider.oninput = function() {
     if (this.value == 15){
-        output.innerHTML = "PPS limit: Uncapped";
+        ppsOutput.innerHTML = "PPS limit: Uncapped";
         moveDelay = 0;
     } 
     else{
-        output.innerHTML = "PPS limit: " + this.value;
+        ppsOutput.innerHTML = "PPS limit: " + this.value;
         moveDelay = 1000 / this.value;
     }
+}
+
+depthSlider.oninput = function() {
+    depthOutput.innerHTML = "Depth: " + this.value;
+    depth = parseInt(this.value);
 }
 
 function an(){
@@ -122,6 +130,7 @@ function stopGame(){
 
 worker.onmessage = (e) =>{
     if (gameRunning == false) return; // Avoids uncaught errors.
+    if (e.data.value == 0) return; // When game is over, don't play more moves
     game.state.piececount++;
 
     game.parseMove(e.data.value); // Move received & played. Draws shadow piece
@@ -141,6 +150,6 @@ worker.onmessage = (e) =>{
         let queue = 0
         if (game.state.piececount % 7 == 0) queue = game.state.sevenbag();
 
-        worker.postMessage({type: 'eval', q: queue}); // Continue evaluating if game hasn't been stopped
+        worker.postMessage({type: 'eval', q: queue, d: depth}); // Continue evaluating if game hasn't been stopped
     }, delay);
 }

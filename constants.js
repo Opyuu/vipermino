@@ -13,17 +13,25 @@ const LINECLEAR_COLOUR = 0xFFFFFF;
 const PIECE_CHAR = ['-', 'I', 'O', 'T', 'L', 'J', 'S', 'Z'];
 const GRID_COLOUR = 0x001e82;
 const BORDER_COLOUR = 0xFFFFFF;
-
-const baseTexture = PIXI.Texture.from('assets/sprites/shadowsprites.png')
 const SHADOW_TEXTURE = [];
-for(let i = 0; i < 8; i++){
-    const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
-    let texture = new PIXI.Texture(baseTexture, show);
-    // const texture = PIXI.Texture.fromImage('assets/sprites/shadowsprites.png', show);
-    SHADOW_TEXTURE.push(texture);
-}
+const PIECE_TEXTURE = [];
 
 const scalingMatrix = new PIXI.Matrix();
 scalingMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
 
 const FPS_DELTA = 1000/60;
+
+let baseShadowTexture = PIXI.Texture.from('assets/sprites/shadowsprites.png')
+let basePieceTexture = PIXI.Texture.from('assets/sprites/piecesprite.png')
+
+for(let i = 0; i < 8; i++){
+    const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
+    let texture = new PIXI.Texture(baseShadowTexture, show);
+    SHADOW_TEXTURE.push(texture);
+}
+
+for(let i = 0; i < 8; i++){
+    const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
+    let texture = new PIXI.Texture(basePieceTexture, show);
+    PIECE_TEXTURE.push(texture);
+}

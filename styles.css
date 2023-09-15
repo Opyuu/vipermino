@@ -2,7 +2,6 @@ body{
     background-color: black; /* An's colour */
     overflow: hidden;
     font-family: Verdana, sans-serif;
-
 }
 
 
@@ -17,6 +16,7 @@ body{
 
     cursor: pointer;
 }
+
 /* This colour scheme works decently */
 .buttons:hover{
     background-color: #ee1166; /* VBS's colour */
@@ -51,6 +51,9 @@ body{
     height: 85vh;
     padding: auto;
     bottom: 10vh;
+    padding-top: 10vh;
+    top: 10vh;
+    justify-content: bottom;
 }
 
 #settings{
@@ -67,6 +70,12 @@ body{
     border-radius: 4px;
     border-color: blue;
     border-width: 4px;
+}
+
+
+#board{
+    top: 10px;
+    position: absolute;
 }
 
 .settingcontent{

@@ -11,23 +11,28 @@
     <body>
         <div id="stage">
             <div id="centre">
-                <div id="boardnew"></div>
+                <div id="board"></div>
             </div>
             <div id="right">
                 <button class="buttons" onclick="play()">Play</button><br>
                 <button class="buttons" onclick="stopGame()">Stop & Reset</button><br>
                 <button class="buttons" onclick="toggleSetting()">Settings</button>
-                <p id="Timer" class="counters">TIMER</p><br>
-                <p id="PPS" class="counters">PPS COUNTER</p><br>
-                <p id="APM" class="counters">APM COUNTER</p><br>
+                <p id="Timer" class="counters">TIMER</p>
+                <p id="PPS" class="counters">PPS COUNTER</p>
+                <p id="APM" class="counters">APM COUNTER</p>
                 <p id="APP" class="counters">APP COUNTER</p>
             </div>
 
             <div id="settings">
                 <p class="settingcontent">SETTINGS</p>
-                <label class="settingcontent" for="PPSSlider" id="PPSlimit">PPS Limit: Uncapped</label>
+                <label class="settingcontent" for="PPSSlider" id="PPSlimit">PPS Limit: 3</label>
                 <div class="slidercontainer">
-                    <input type="range" min="1" max="15" value="15" class="slider" id="PPSSlider">
+                    <input type="range" min="1" max="15" value="3" class="slider" id="PPSSlider">
+                </div>
+                <br>
+                <label class="settingcontent" for="DepthSlider" id="Depth">Depth: 10</label>
+                <div class="slidercontainer">
+                    <input type="range" min="5" max="10" value="10" class="slider" id="DepthSlider">
                 </div>
                 <br><br>
                 <button class="buttons" onclick="toggleSetting()">Save & Close</button>

@@ -65,24 +65,26 @@ class Game{
     drawBorder(){
         let offset = (BORDER_SIZE/BLOCK_SIZE) / 2; // Line starts from centre, need to offset so the drawing is correct
         this.boardGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
-        this.boardGraphics.moveTo(0, RENDER_ROWS + offset);
-        this.boardGraphics.lineTo(0, 4);
+        this.boardGraphics.moveTo(-offset, RENDER_ROWS + offset);
+        this.boardGraphics.lineTo(-offset, 4);
 
-        this.boardGraphics.moveTo(0, RENDER_ROWS);
-        this.boardGraphics.lineTo(COLS, RENDER_ROWS);
+        this.boardGraphics.moveTo(-offset * 2, RENDER_ROWS + offset);
+        this.boardGraphics.lineTo(COLS + offset * 2, RENDER_ROWS + offset);
 
-        this.boardGraphics.moveTo(COLS, RENDER_ROWS + offset);
-        this.boardGraphics.lineTo(COLS, 4);
+        this.boardGraphics.moveTo(COLS + offset, RENDER_ROWS + offset);
+        this.boardGraphics.lineTo(COLS + offset, 4);
+        this.boardGraphics.endFill();
     }
 
     drawframe(){
         // Remove graphics from app so it acts as a buffer
         this.app.stage.removeChild(this.boardGraphics);
         this.boardGraphics.clear();
-
+        
         // Draw board
         this.drawBoard();
         this.drawBorder();
+        // this.drawBorder();
         this.drawActive();
 
         this.app.stage.addChild(this.boardGraphics);  
@@ -113,9 +115,7 @@ class Game{
             this.activeGraphics.drawRect(xpos, RENDER_ROWS - ypos - 1, 1, 1);
             this.activeGraphics.endFill();
         }
-
     }
-
 
     drawBoard(){
         let clearRows = this.state.getLines();
@@ -127,12 +127,17 @@ class Game{
                 let cellX = col;
                 let cellY = (RENDER_ROWS - row - 1);
                 
-                let cellColor = PIECE_COLOUR[this.state.board[col][row]];
-                if (clearRows.includes(row)) cellColor = 0xFFFFFF;
-    
-                this.boardGraphics.beginFill(cellColor);
-                this.boardGraphics.drawRect(cellX, cellY, 1, 1);
-                this.boardGraphics.endFill();
+                // let cellColor = PIECE_COLOUR[this.state.board[col][row]];
+                if (clearRows.includes(row)){
+                    let cellColor = 0xFFFFFF;
+                    this.boardGraphics.beginFill(cellColor);
+                    this.boardGraphics.drawRect(cellX, cellY, 1, 1);
+                    this.boardGraphics.endFill();
+                } else{
+                    this.boardGraphics.beginTextureFill({texture: PIECE_TEXTURE[this.state.board[col][row]], matrix: scalingMatrix});
+                    this.boardGraphics.drawRect(cellX, cellY, 1, 1);
+                    this.boardGraphics.endFill();
+                }
             }
         } 
     }
@@ -159,7 +164,7 @@ class Game{
 
         // Draw borders
         this.queueGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
-        this.queueGraphics.moveTo(0 - offset, 0);
+        this.queueGraphics.moveTo(0, 0);
         this.queueGraphics.lineTo(6, 0);
         this.queueGraphics.moveTo(6 - offset, 0);
         this.queueGraphics.lineTo(6 - offset, 16);
@@ -191,9 +196,7 @@ class Game{
         // Draw borders
         this.holdGraphics.lineStyle(BORDER_SIZE / BLOCK_SIZE, BORDER_COLOUR);
         this.holdGraphics.moveTo(0, 0);
-        this.holdGraphics.lineTo(6 + offset, 0);
-        this.holdGraphics.moveTo(6, 0);
-        this.holdGraphics.lineTo(6, 4);
+        this.holdGraphics.lineTo(6, 0);
         this.holdGraphics.moveTo(6, 4);
         this.holdGraphics.lineTo(0, 4);
         this.holdGraphics.moveTo(offset, 4);
