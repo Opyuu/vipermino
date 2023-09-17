@@ -18,9 +18,6 @@ function shuffle(array){
 
 class gamestate{
     board = [];
-    coords = new coord(0, 0)
-    piecetype;
-    rotation;
     queue = [];
     piececount = 0;
     attack = 0;

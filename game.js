@@ -1,4 +1,5 @@
 class Game{
+
     constructor(app){
         this.state = new gamestate();
         this.app = app;
