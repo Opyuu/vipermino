@@ -16,7 +16,7 @@ function shuffle(array){
   return array;
 }
 
-class gamestate{
+class Gamestate{
     board = [];
     queue = [];
     piececount = 0;
@@ -42,27 +42,23 @@ class gamestate{
         }
     }
 
-    encodequeue(){ // Used at start of game
-        let queue = 0;
-        for (let i = 6; i >= 0; i--){
-            queue *= 8;
-            queue += this.queue[i];
+    encodeQueue(){ // Used at start of game
+        let queue = "";
+        for (let i = 0; i < 7; i++){
+            queue += PIECE_CHAR[this.queue[i]];
         }
         return queue;
     }
 
-    sevenbag(){ // Generate a new queue
+    sevenBag(){ // Generate a new queue
         let bag = [1, 2, 3, 4, 5, 6, 7];
-        let queue = 0;
+        let queue = "";
         bag = shuffle(bag);
         for(let i = 0; i < 7; i++){
             this.queue.push(bag[i]);
+            queue += PIECE_CHAR[bag[i]];
         }
 
-        for (let i = 6; i >= 0; i--){
-            queue *= 8;
-            queue += bag[i];
-        }
         return queue;
     }
 

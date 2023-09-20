@@ -1,7 +1,7 @@
 class Game{
 
     constructor(app){
-        this.state = new gamestate();
+        this.state = new Gamestate();
         this.app = app;
         this.boardGraphics = new PIXI.Graphics();
         this.gridGraphics = new PIXI.Graphics();
@@ -42,7 +42,7 @@ class Game{
 
         this.state.hold = this.state.queue[0];
         this.drawGrid();
-        this.drawframe();
+        this.drawFrame();
         this.drawHold();
         this.drawQueue();
     }
@@ -77,7 +77,7 @@ class Game{
         this.boardGraphics.endFill();
     }
 
-    drawframe(){
+    drawFrame(){
         // Remove graphics from app so it acts as a buffer
         this.app.stage.removeChild(this.boardGraphics);
         this.boardGraphics.clear();
@@ -209,16 +209,14 @@ class Game{
 
     // Functions to communicate with wasm
     parseMove(move){
-        let y = move % 100;
-        move = Math.floor(move / 100);
-        let x = move % 10;
-        move = Math.floor(move / 10);
-        let rotation = move % 10;
-        move = Math.floor(move / 10);
-        let piece = move % 10;
-        move = Math.floor(move/10);
-        let attack = move % 100;
+        let y = move.location.y;
+        let x = move.location.x;
+        let rotation = move.location.rotation;
+        let piece = move.location.piece;
+
+        let attack = parseInt(move.attack);
         game.state.attack += attack;
+        game.state.piececount++;
 
         if (piece == this.state.hold){
             this.state.hold = this.state.queue.shift(); // If the piece placed was the hold piece, swap hold with next piece
@@ -228,7 +226,7 @@ class Game{
         }
 
         this.state.place(piece, rotation, x, y);
-        this.drawframe(); // Draw line clears
+        this.drawFrame(); // Draw line clears
         this.state.unplace(piece, rotation, x, y);
 
         this.app.stage.removeChild(this.activeGraphics);

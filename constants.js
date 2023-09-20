@@ -15,6 +15,7 @@ const GRID_COLOUR = 0x001e82;
 const BORDER_COLOUR = 0xFFFFFF;
 const SHADOW_TEXTURE = [];
 const PIECE_TEXTURE = [];
+const ENCODE_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 const scalingMatrix = new PIXI.Matrix();
 scalingMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
