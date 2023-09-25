@@ -32,6 +32,10 @@ class Gamestate{
         this.queue = shuffle(this.queue);
     
         // Initialise board to all 0s
+        this.clearBoard();
+    }
+
+    clearBoard(){
         for(let col = 0; col < 10; col++){
             this.board[col] = [];
         }
@@ -42,9 +46,13 @@ class Gamestate{
         }
     }
 
+    clearQueue(){
+        this.queue = [];
+    }
+
     encodeQueue(){ // Used at start of game
         let queue = "";
-        for (let i = 0; i < 7; i++){
+        for (let i = 0; i < this.queue.length; i++){
             queue += PIECE_CHAR[this.queue[i]];
         }
         return queue;

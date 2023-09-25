@@ -11,6 +11,8 @@ const BACKGROUND_COLOUR = "#000000";
 const PIECE_COLOUR = [0x000000, 0x00FFE1, 0xFFEA00, 0xB300FF, 0xFF8800, 0x0008FF, 0x00FF15, 0xFF000D, 0x8F8F8F];
 const LINECLEAR_COLOUR = 0xFFFFFF;
 const PIECE_CHAR = ['-', 'I', 'O', 'T', 'L', 'J', 'S', 'Z'];
+const PIECES = ['I', 'O', 'T', 'L', 'J', 'S', 'Z'];
+const FUMEN_PIECE = [0, 1, 4, 2, 7, 3, 5, 6, 8];
 const GRID_COLOUR = 0x001e82;
 const BORDER_COLOUR = 0xFFFFFF;
 const SHADOW_TEXTURE = [];
@@ -31,7 +33,7 @@ for(let i = 0; i < 8; i++){
     SHADOW_TEXTURE.push(texture);
 }
 
-for(let i = 0; i < 8; i++){
+for(let i = 0; i <= 8; i++){
     const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
     let texture = new PIXI.Texture(basePieceTexture, show);
     PIECE_TEXTURE.push(texture);

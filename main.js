@@ -1,10 +1,13 @@
 const worker = new Worker('worker.js');
 
+const menu = document.getElementById("settings");
 const pps = document.getElementById("pps");
 const PPSslider = document.getElementById("PPSSlider");
 const ppsOutput = document.getElementById("PPSlimit");
 const depthSlider = document.getElementById("DepthSlider");
 const depthOutput = document.getElementById("Depth");
+const fumenInput = document.getElementById("Fumen");
+const queueInput = document.getElementById("Queue");
 
 /* Plans:
     make sure to only update the right parts of the canvas that requires updating
@@ -24,6 +27,7 @@ document.getElementById('board').appendChild(app.view);
 game = new Game(app);
 game.init();
 
+// Move these to game class? globals are kind of yuck
 var gameRunning = false;
 var startTime;
 var moveDelay = 1000/3;
@@ -36,27 +40,27 @@ function init(){
     q += game.state.sevenBag();
     q += game.state.sevenBag();
     worker.postMessage({type: 'start', board: fumen, queue: q}); // Pass q1 to q3
-    startTime = performance.now();
     sliderTime = performance.now();
     game.state.hold = game.state.queue.shift(); // Move first piece to hold
 }
+
 
 function play(){
     if (gameRunning) return;
     gameRunning = true;
     init();
 
-    game.drawFrame();
     game.drawQueue();
     game.drawHold();
+    game.drawFrame();
 
+    startTime = performance.now();
     worker.postMessage({type: 'suggest', depth: depth});
     gameLoop();
 }
 
 
 function toggleSetting(){
-    let menu = document.getElementById("settings");
     if (!showSetting){
         showSetting = true;
         menu.style.display = "block";
@@ -64,11 +68,59 @@ function toggleSetting(){
     else{
         showSetting = false;
         menu.style.display = "none";
-        // parseFumen();
+        fumenToBoard();
+        queueToBoard();
     }
 }
 
-function parse_fumen(fumen){
+queueInput.oninput = function(){
+    this.value = this.value.toUpperCase(); // Force upper case for input of queue
+}
+
+function queueToBoard(){
+    let queue = queueInput.value;
+    console.log(queue);
+    if (queue == "") return;
+    for (char of queue){
+        if (!PIECES.includes(char)) {
+            alert("Invalid queue");
+            showSetting = true;
+            menu.style.display = "block";
+            return;
+        }
+    }
+
+    if (gameRunning) return;
+    game.state.clearQueue();
+    for (char of queue){
+        game.state.queue.push(PIECE_CHAR.indexOf(char));
+    }
+    game.drawQueue();
+    game.state.hold = game.state.queue[0];
+    game.drawHold();
+}
+
+function fumenToBoard(){
+    if (gameRunning) return;
+
+    fumen = fumenInput.value;
+    try{
+        parseFumen(fumen);
+    } catch(err){ 
+        game.state.clearBoard();
+        fumen = "";
+        alert("Invalid fumen");
+        showSetting = true;
+        menu.style.display = "block";
+    }  
+    game.drawFrame();
+    game.drawQueue();
+    game.drawHold();
+}
+
+
+function parseFumen(fumen){
+    if (fumen == "") return;
     let minoCounter = 0;
 
     let splitFumen = fumen.split("@")[1]; // Remove version header
@@ -91,11 +143,12 @@ function parse_fumen(fumen){
             let x = newPos % 10;
             let y = 22 - Math.floor(newPos / 10);
             if(y < 0) return; // Last piece
-            game.state.board[x][y] = pieceType;
+            game.state.board[x][y] = FUMEN_PIECE[pieceType];
         }
         minoCounter = minoCounter + pieceCount;
     }
 }
+
 // Update the current slider value (each time you drag the slider handle)
 PPSslider.oninput = function() {
     if (this.value == 15){
@@ -113,6 +166,7 @@ depthSlider.oninput = function() {
     depth = parseInt(this.value);
 }
 
+
 function an(){
     document.body.style.backgroundColor = '#00bbdc';
 }
@@ -120,7 +174,6 @@ function an(){
 function gameLoop(){
     t1 = performance.now();
     let time = (t1 - startTime) / 1000;
-    // Draw frame only when COBRA plays a move
 
     // Update counters
     document.getElementById("Timer").innerHTML = "Time: " + time.toFixed(3);
@@ -139,6 +192,8 @@ function stopGame(){
     delete game;
     game = new Game(app);
     game.init();
+    fumenToBoard();
+    queueToBoard();
 }
 
 worker.onmessage = (e) =>{
