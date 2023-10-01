@@ -24,8 +24,8 @@ scalingMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
 
 const FPS_DELTA = 1000/60;
 
-let baseShadowTexture = PIXI.Texture.from('assets/sprites/shadowsprites.png')
-let basePieceTexture = PIXI.Texture.from('assets/sprites/piecesprite.png')
+let baseShadowTexture = PIXI.Texture.from('../assets/sprites/shadowsprites.png')
+let basePieceTexture = PIXI.Texture.from('../assets/sprites/piecesprite.png')
 
 for(let i = 0; i < 8; i++){
     const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);

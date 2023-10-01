@@ -28,19 +28,18 @@ game = new Game(app);
 game.init();
 
 // Move these to game class? globals are kind of yuck
-var gameRunning = false;
-var startTime;
-var moveDelay = 1000/3;
-var depth = 10;
-var showSetting = false;
-var fumen = "";
+let gameRunning = false;
+let startTime;
+let moveDelay = 1000/3;
+let depth = 10;
+let showSetting = false;
+let fumen = "";
 
 function init(){
     let q = game.state.encodeQueue();
     q += game.state.sevenBag();
     q += game.state.sevenBag();
     worker.postMessage({type: 'start', board: fumen, queue: q}); // Pass q1 to q3
-    sliderTime = performance.now();
     game.state.hold = game.state.queue.shift(); // Move first piece to hold
 }
 
@@ -79,9 +78,8 @@ queueInput.oninput = function(){
 
 function queueToBoard(){
     let queue = queueInput.value;
-    console.log(queue);
-    if (queue == "") return;
-    for (char of queue){
+    if (queue === "") return;
+    for (let char of queue){
         if (!PIECES.includes(char)) {
             alert("Invalid queue");
             showSetting = true;
@@ -92,7 +90,7 @@ function queueToBoard(){
 
     if (gameRunning) return;
     game.state.clearQueue();
-    for (char of queue){
+    for (let char of queue){
         game.state.queue.push(PIECE_CHAR.indexOf(char));
     }
     game.drawQueue();
@@ -120,16 +118,16 @@ function fumenToBoard(){
 
 
 function parseFumen(fumen){
-    if (fumen == "") return;
+    if (fumen === "") return;
     let minoCounter = 0;
 
     let splitFumen = fumen.split("@")[1]; // Remove version header
     splitFumen = splitFumen.substring(0, splitFumen.length - 3); // Remove piece appended at end
     splitFumen = splitFumen.replace(/[?]/g, ''); // Remove ? separators
-    pairs = splitFumen.match(/.{2}/g); // Split fumen into pairs
+    let pairs = splitFumen.match(/.{2}/g); // Split fumen into pairs
     for (let i = 0; i < pairs.length; i++){ // Loop through pairs
-        value1 = ENCODE_TABLE.indexOf(pairs[i][0]);
-        value2 = ENCODE_TABLE.indexOf(pairs[i][1]);
+        let value1 = ENCODE_TABLE.indexOf(pairs[i][0]);
+        let value2 = ENCODE_TABLE.indexOf(pairs[i][1]);
 
         // Calculate num & the corresponding piece values
         let num = value1 + value2 * 64;
@@ -151,7 +149,7 @@ function parseFumen(fumen){
 
 // Update the current slider value (each time you drag the slider handle)
 PPSslider.oninput = function() {
-    if (this.value == 15){
+    if (this.value === 15){
         ppsOutput.innerHTML = "PPS limit: Uncapped";
         moveDelay = 0;
     } 
@@ -197,9 +195,9 @@ function stopGame(){
 }
 
 worker.onmessage = (e) =>{
-    if (gameRunning == false) return; // Avoids uncaught errors.
-    if (e.data.value == 0) return; // When game is over, don't play more moves
-    if (e.data.type != 'suggestion') return; // Ignore other messages that aren't suggestions
+    if (gameRunning === false) return; // Avoids uncaught errors.
+    if (e.data.value === 0) return; // When game is over, don't play more moves
+    if (e.data.type !== 'suggestion') return; // Ignore other messages that aren't suggestions
 
     game.parseMove(e.data.move); // Move received & played. Draws shadow piece
     game.drawHold(); // Update hold 
@@ -207,7 +205,7 @@ worker.onmessage = (e) =>{
 
     let delay = Math.max(0, moveDelay /*- e.data.time*/);
     setTimeout(() => {
-        if (gameRunning == false) return // Is game still running after the timeout?
+        if (gameRunning === false) return // Is game still running after the timeout?
         // Actually play the move
         game.state.clearLines();
 
@@ -216,7 +214,7 @@ worker.onmessage = (e) =>{
         game.drawQueue();
 
         let queue = 0
-        if (game.state.piececount % 7 == 0) {
+        if (game.state.piececount % 7 === 0) {
             queue = game.state.sevenBag();
             worker.postMessage({type: 'newpiece', piece: queue});
         }

@@ -1,0 +1,62 @@
+<!--https://opyuu.github.io/vipermino-->
+<!--Site is Vivid Bad Squad themed (colours)!!-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Vipermino</title>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="icon" href="../assets/images/icon.png">
+    </head>
+
+    <body>
+        <div id="stage">
+            <div id="centre">
+                <div id="board"></div>
+            </div>
+            <div id="right">
+                <button class="buttons" onclick="play()">Start</button><br>
+                <button class="buttons" onclick="stopGame()">Stop & Reset</button><br>
+                <button class="buttons" onclick="toggleSetting()">Settings</button>
+                <p id="Timer" class="counters">TIMER</p>
+                <p id="PPS" class="counters">PPS COUNTER</p>
+                <p id="APM" class="counters">APM COUNTER</p>
+                <p id="APP" class="counters">APP COUNTER</p>
+            </div>
+
+            <div id="settings">
+                <p class="settingcontent">SETTINGS</p>
+                <label class="settingcontent" for="PPSSlider" id="PPSlimit">PPS Limit: 3</label>
+                <div class="slidercontainer">
+                    <input type="range" min="1" max="15" value="3" class="slider" id="PPSSlider">
+                </div>
+                <br>
+                <label class="settingcontent" for="DepthSlider" id="Depth">Depth: 10</label>
+                <div class="slidercontainer">
+                    <input type="range" min="5" max="10" value="10" class="slider" id="DepthSlider">
+                </div>
+                <br>
+
+                <label class="settingcontent" for="Fumen">Starting fumen:</label>
+                <input type="text" class="slider" id="Fumen">
+                <br>
+                <br>
+
+                <label class="settingcontent" for="Queue">Starting queue:</label>
+                <input type="text" class="slider" id="Queue">
+
+                <br><br>
+                <button class="buttons" onclick="toggleSetting()">Save & Close</button>
+            </div>
+        </div>
+        
+
+    </body>
+
+    <script type="text/javascript" src="../assets/js/pixi.min.js"></script>
+    <script type="text/javascript" src="constants.js"></script>
+    <script type="text/javascript" src="piece.js"></script>
+    <script type="text/javascript" src="board.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+    <script type="text/javascript" src="cobra.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+</html>

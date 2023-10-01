@@ -100,7 +100,9 @@ class Game{
         for (let mino = 0; mino < 4; mino++){
             let x = col + pieceTable[this.state.queue[0]][0][mino].x
             let y = row - pieceTable[this.state.queue[0]][0][mino].y
+            this.activeGraphics.beginTextureFill({texture: PIECE_TEXTURE[this.state.queue[0]], matrix: scalingMatrix});
             this.activeGraphics.drawRect(x, y, 1, 1);
+            this.activeGraphics.endFill();
         }
     }
 
@@ -123,15 +125,14 @@ class Game{
         // If line is in clear rows, draw something fancy over it
         for (let row = 0; row < RENDER_ROWS; row++){
             for (let col = 0; col < COLS; col++){
-                if (this.state.board[col][row] == 0) continue;
+                if (this.state.board[col][row] === 0) continue;
 
                 let cellX = col;
                 let cellY = (RENDER_ROWS - row - 1);
                 
                 // let cellColor = PIECE_COLOUR[this.state.board[col][row]];
                 if (clearRows.includes(row)){
-                    let cellColor = 0xFFFFFF;
-                    this.boardGraphics.beginFill(cellColor);
+                    this.boardGraphics.beginFill(LINECLEAR_COLOUR);
                     this.boardGraphics.drawRect(cellX, cellY, 1, 1);
                     this.boardGraphics.endFill();
                 } else{
@@ -153,12 +154,21 @@ class Game{
         // Loop through every piece in queue
         for (let i = 1; i < 6; i++){
             this.queueGraphics.beginFill(PIECE_COLOUR[this.state.queue[i]]);
-            let xoffset = this.state.queue[i] == 1 | this.state.queue[i] == 2 ? 2 : 2.5; // Offsets for centering individual pieces
-            let yoffset = this.state.queue[i] == 1 ? 0.5 : 1; 
+            let xoffset = this.state.queue[i] === 1 || this.state.queue[i] === 2 ? 2 : 2.5; // Offsets for centering individual pieces
+            let yoffset = this.state.queue[i] === 1 ? 0.5 : 1;
             for (let mino = 0; mino < 4; mino++){
                 let x = pieceTable[this.state.queue[i]][0][mino].x + xoffset;
                 let y = minoYPos - pieceTable[this.state.queue[i]][0][mino].y + yoffset;
+                let translationMatrix = new PIXI.Matrix();
+                translationMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
+
+                // this.holdGraphics.drawRect(x, y, 1, 1);
+                this.queueGraphics.beginTextureFill({
+                    texture: PIECE_TEXTURE[this.state.queue[i]],
+                    matrix: translationMatrix.translate(xoffset - 2, yoffset)
+                });
                 this.queueGraphics.drawRect(x, y, 1, 1);
+                this.queueGraphics.endFill();
             }
             minoYPos += 3;
         }
@@ -176,19 +186,29 @@ class Game{
     }
 
     drawHold(){
+        if (this.state.hold === 0) return;
         this.app.stage.removeChild(this.holdGraphics);
         this.holdGraphics.clear();
 
         this.holdGraphics.beginFill(PIECE_COLOUR[this.state.hold]);
 
-        let xoffset = this.state.hold == 1 | this.state.hold == 2 ? 2 : 2.5;
-        let yoffset = this.state.hold == 1 ? 0.5 : 1;
+        const xoffset = this.state.hold === 1 || this.state.hold === 2 ? 2 : 2.5;
+        const yoffset = this.state.hold === 1 ? 0.5 : 1;
 
         for (let mino = 0; mino < 4; mino++){
             let x = pieceTable[this.state.hold][0][mino].x + xoffset; 
             let y = 1 - pieceTable[this.state.hold][0][mino].y + yoffset;
 
+            let translationMatrix = new PIXI.Matrix();
+            translationMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
+
+            // this.holdGraphics.drawRect(x, y, 1, 1);
+            this.holdGraphics.beginTextureFill({
+                texture: PIECE_TEXTURE[this.state.hold],
+                matrix: translationMatrix.translate(xoffset - 2, yoffset)
+            });
             this.holdGraphics.drawRect(x, y, 1, 1);
+            this.holdGraphics.endFill();
         }
 
         // Lines
@@ -218,7 +238,7 @@ class Game{
         game.state.attack += attack;
         game.state.piececount++;
 
-        if (piece == this.state.hold){
+        if (piece === this.state.hold){
             this.state.hold = this.state.queue.shift(); // If the piece placed was the hold piece, swap hold with next piece
         }
         else{

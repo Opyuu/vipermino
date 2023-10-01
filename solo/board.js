@@ -90,7 +90,7 @@ class Gamestate{
                 value *= this.board[col][row]
             }
             
-            if (value != 0){
+            if (value !== 0){
                 lines.push(row);
             }
         }
@@ -104,7 +104,7 @@ class Gamestate{
                 value *= this.board[col][row];
             }
 
-            if (value != 0){
+            if (value !== 0){
                 this.clearLine(row);
                 row--;
             }
