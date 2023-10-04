@@ -1,7 +1,6 @@
 const worker = new Worker('worker.js');
 
 const menu = document.getElementById("settings");
-const pps = document.getElementById("pps");
 const PPSslider = document.getElementById("PPSSlider");
 const ppsOutput = document.getElementById("PPSlimit");
 const depthSlider = document.getElementById("DepthSlider");
@@ -149,7 +148,7 @@ function parseFumen(fumen){
 
 // Update the current slider value (each time you drag the slider handle)
 PPSslider.oninput = function() {
-    if (this.value === 15){
+    if (this.value === "15"){
         ppsOutput.innerHTML = "PPS limit: Uncapped";
         moveDelay = 0;
     } 

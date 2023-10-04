@@ -19,6 +19,18 @@ const SHADOW_TEXTURE = [];
 const PIECE_TEXTURE = [];
 const ENCODE_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
+const CONNECTED_TEXTURES = [];
+
+for(let piece = 0; piece < 8; piece++){
+    const baseConnectedTexture = PIXI.Texture.from('../assets/sprites/connected.png')
+    CONNECTED_TEXTURES[piece + 1] = [];
+    for (let mino = 0; mino < 4; mino++){
+        const show = new PIXI.Rectangle(piece * BLOCK_SIZE, mino * BLOCK_SIZE, 32, 32);
+        CONNECTED_TEXTURES[piece + 1][mino] = new PIXI.Texture(baseConnectedTexture, show);
+    }
+}
+
+
 const scalingMatrix = new PIXI.Matrix();
 scalingMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
 

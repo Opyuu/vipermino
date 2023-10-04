@@ -6,18 +6,23 @@
 }
 
 body{
-    font-family: MinoFont, sans-serif;
+    font-family: sans-serif;
     background-color: black;
     color: white;
+}
+
+.mino{
+    font-family: MinoFont, sans-serif;
 }
 
 .navbar{
     position: fixed;
     top: 0;
     left: 0;
-    background-color: #00bd7e;
+    background-color: #ff679a;
     width: 100vw;
     height: 7vh;
+    overflow: hidden;
 }
 
 a{
@@ -30,7 +35,7 @@ a{
 
     cursor: pointer;
     color: white;
-    transition: 0.4s;
+    transition: 0.25s;
 }
 
 a:hover{
