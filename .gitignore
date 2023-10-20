@@ -1,6 +1,4 @@
 .DS_Store
-OLD/cobra.js
-OLD/cobra.wasm
-OLD/cobra.wasm copy
-OLD/cobra copy.js
 .idea/
+solo/temp/cobra.wasm
+solo/temp/cobra.js

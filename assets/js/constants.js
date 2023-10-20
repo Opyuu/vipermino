@@ -1,3 +1,9 @@
+const ATTACK_TABLE = [
+    [0, 0, 1, 2, 4],
+    [0, 0, 1, 2, 4],
+    [0, 2, 4, 6, 8]
+]; // [TSPIN][CLEAR]
+
 const COLS = 10;
 const ROWS = 40;
 const RENDER_ROWS = 24;

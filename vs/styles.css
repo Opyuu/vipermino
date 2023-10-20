@@ -1,4 +1,4 @@
-button{
+#play{
     position: absolute;
     right: 10vh;
     top: 50vh;
@@ -8,4 +8,19 @@ button{
 
 body{
     overflow: hidden;
+}
+
+div{
+    max-width: 50%;
+    display: inline;
+}
+
+#board{
+    position: absolute;
+    left: 0;
+}
+
+#cobraBoard{
+    position: absolute;
+    right: 0;
 }

@@ -3,7 +3,7 @@ class Game{
     app;
     boardGraphics;
 
-    constructor(app) {
+    constructor(app, shuffler, garbShuffler) {
         this.state = new GameState();
         this.app = app;
         this.boardGraphics = new PIXI.Graphics();
@@ -11,6 +11,10 @@ class Game{
         this.activeGraphics = new PIXI.Graphics();
         this.queueGraphics = new PIXI.Graphics();
         this.holdGraphics = new PIXI.Graphics();
+        this.garbageGraphics = new PIXI.Graphics();
+
+        this.state.shuffler = shuffler;
+        this.state.garbShuffler = garbShuffler;
     }
 
     destroy(){
@@ -18,15 +22,19 @@ class Game{
     }
 
     init(){
-        this.boardGraphics.position.set(6 * BLOCK_SIZE, 0);
+        this.boardGraphics.position.set(7 * BLOCK_SIZE, 0);
         this.boardGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
         this.borderGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.activeGraphics.position.set(6 * BLOCK_SIZE, 0);
+        this.activeGraphics.position.set(7 * BLOCK_SIZE, 0);
         this.activeGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.queueGraphics.position.set((6 + COLS) * BLOCK_SIZE, 4 * BLOCK_SIZE);
+        this.queueGraphics.position.set((6 + COLS + 1) * BLOCK_SIZE, 4 * BLOCK_SIZE);
         this.queueGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
         this.holdGraphics.position.set(0, 4 * BLOCK_SIZE);
         this.holdGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+
+        this.garbageGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.garbageGraphics.position.set(6 * BLOCK_SIZE, 0);
+
     }
 
     drawBoard(){
@@ -42,24 +50,24 @@ class Game{
         // Board border
         let offset = (BORDER_SIZE/BLOCK_SIZE) / 2;
         this.borderGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
-        this.borderGraphics.moveTo(-offset + 6, RENDER_ROWS + offset);
-        this.borderGraphics.lineTo(-offset + 6, 4);
-        this.borderGraphics.moveTo(-offset * 2 + 6, RENDER_ROWS + offset);
-        this.borderGraphics.lineTo(COLS + offset * 2 + 6, RENDER_ROWS + offset);
-        this.borderGraphics.moveTo(COLS + offset + 6, RENDER_ROWS + offset);
-        this.borderGraphics.lineTo(COLS + offset + 6, 4);
+        this.borderGraphics.moveTo(-offset + 7, RENDER_ROWS + offset);
+        this.borderGraphics.lineTo(-offset + 7, 4);
+        this.borderGraphics.moveTo(-offset * 2 + 7, RENDER_ROWS + offset);
+        this.borderGraphics.lineTo(COLS + offset * 2 + 7, RENDER_ROWS + offset);
+        this.borderGraphics.moveTo(COLS + offset + 7, RENDER_ROWS + offset);
+        this.borderGraphics.lineTo(COLS + offset + 7, 4);
         this.borderGraphics.endFill();
 
         this.borderGraphics.lineStyle(GRID_SIZE/BLOCK_SIZE, GRID_COLOUR);
 
         // Grids
         for (let i = 1; i < COLS; i++){
-            this.borderGraphics.moveTo(i + 6, 4);
-            this.borderGraphics.lineTo(i + 6, RENDER_ROWS);
+            this.borderGraphics.moveTo(i + 7, 4);
+            this.borderGraphics.lineTo(i + 7, RENDER_ROWS);
         }
         for (let j = RENDER_ROWS - 1; j > 3; j--){
-            this.borderGraphics.moveTo(6, j);
-            this.borderGraphics.lineTo(16, j);
+            this.borderGraphics.moveTo(7, j);
+            this.borderGraphics.lineTo(17, j);
         }
         this.borderGraphics.endFill();
 
@@ -75,13 +83,24 @@ class Game{
 
         // Queue border
         this.borderGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
-        this.borderGraphics.moveTo(16, 4);
-        this.borderGraphics.lineTo(22, 4);
-        this.borderGraphics.moveTo(22 - offset, 4);
-        this.borderGraphics.lineTo(22 - offset, 20);
-        this.borderGraphics.moveTo(22, 20);
-        this.borderGraphics.lineTo(16, 20);
+        this.borderGraphics.moveTo(17, 4);
+        this.borderGraphics.lineTo(23, 4);
+        this.borderGraphics.moveTo(23 - offset, 4);
+        this.borderGraphics.lineTo(23 - offset, 20);
+        this.borderGraphics.moveTo(23, 20);
+        this.borderGraphics.lineTo(17, 20);
         this.app.stage.addChild(this.borderGraphics);
+
+        // Garbage border
+        this.borderGraphics.lineStyle(BORDER_SIZE/BLOCK_SIZE, BORDER_COLOUR);
+        this.borderGraphics.moveTo(6, 4 - offset);
+        this.borderGraphics.lineTo(6, 24 + offset);
+        this.borderGraphics.moveTo(6 - offset, 24 + offset);
+        this.borderGraphics.lineTo(7, 24 + offset);
+        this.borderGraphics.moveTo(7 - offset, 4 - offset);
+        this.borderGraphics.lineTo(7 - offset, 5);
+
+
     }
 
     drawActive(){
@@ -106,18 +125,33 @@ class Game{
         this.app.stage.addChild(this.holdGraphics);
     }
 
+    drawGarbage(){
+        this.app.stage.removeChild(this.garbageGraphics);
+        this.garbageGraphics.clear();
+        this.state.drawGarbage(this.garbageGraphics);
+        this.app.stage.addChild(this.garbageGraphics);
+    }
+
     hold(){
         this.state.hold();
         this.drawHold();
         this.drawActive();
+        this.drawQueue();
     }
 
     hardDrop(){
-        this.state.hardDrop();
-        this.drawBoard();
-        this.drawActive();
-        this.drawQueue();
-        this.drawHold();
+        let queue = this.state.hardDrop();
+        if (this.state.isValid(this.state.activePiece)) {
+            this.drawBoard();
+            this.drawActive();
+            this.drawQueue();
+            this.drawHold();
+            this.drawGarbage();
+        }
+        // Calculate garbage sent and send said garbage
+
+        // Update garbage queue render
+        return queue;
     }
 
     moveLeft(){
@@ -144,6 +178,22 @@ class Game{
     rotateCCW(){
         this.state.rotateCCW();
         this.drawActive();
+    }
+
+    spawnGarbage(count){
+        this.state.spawnGarbage(count);
+
+        this.drawBoard();
+        this.drawActive();
+        // Control number of garbage spawned and columns where they spawn
+    }
+
+    garbageIn(lines){
+        this.state.garbageIn(lines);
+
+
+        this.drawGarbage();
+        // Update garbage queue render
     }
 }
 

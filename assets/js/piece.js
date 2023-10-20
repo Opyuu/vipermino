@@ -7,6 +7,27 @@ class Coord {
     }
 }
 
+class PRNG {
+    s = 0;
+    old = 0;
+    constructor(seed) {
+        this.s = seed;
+    }
+
+    rand(){
+        this.old = this.s;
+        this.s ^= (this.s >> 12);
+        this.s ^= (this.s << 25);
+        this.s ^= (this.s >> 27);
+        return this.s * 2685821657736338717;
+    }
+
+    undo(){
+        this.s = this.old;
+        this.old = 0;
+    }
+}
+
 
 function cells(piece){ // Returns an array of cell location: [mino][x/y]
     switch(piece){
@@ -28,6 +49,7 @@ function cells(piece){ // Returns an array of cell location: [mino][x/y]
             return [new Coord( 0, 0), new Coord(0, 0), new Coord(0, 0), new Coord( 0, 0)];
     }
 }
+
 
 // Rotates a specific mino relative to the centre
 function rotate_cell(rotation, coords){ // Returns Coord class
@@ -52,6 +74,14 @@ function rotate_cells(rotation, pieceCoords){ // Piececoords as array of coords.
     ];
 }
 
+let outCorners = [
+    [new Coord(-1, -1), new Coord(1, -1)]
+]; // [Rotation][Corner #] of Coord
+
+let inCorners = [
+    [new Coord(1, 1), new Coord(-1, 1)]
+];
+
 function init_piece(){
     for (let i = 0; i < 8; i++){
         pieceTable[i] = [];
@@ -60,6 +90,20 @@ function init_piece(){
     for(let piece = 0; piece < 8; piece++){
         for (let rotation = 0; rotation < 4; rotation++){
             pieceTable[piece][rotation] = rotate_cells(rotation, cells(piece));
+        }
+    }
+
+    for (let rotation = 1; rotation < 4; rotation++){
+        outCorners[rotation] = [];
+        for (let mino = 0; mino < 2; mino++){
+            outCorners[rotation][mino] = rotate_cell(rotation, outCorners[0][mino]);
+        }
+    }
+
+    for (let rotation = 1; rotation < 4; rotation++){
+        inCorners[rotation] = [];
+        for (let mino = 0; mino < 2; mino++){
+            inCorners[rotation][mino] = rotate_cell(rotation, inCorners[0][mino]);
         }
     }
 }

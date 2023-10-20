@@ -1,3 +1,7 @@
+const worker = new Worker('worker.js');
+
+let targetPPS = 1;
+
 let leftDown = false;
 let rightDown = false;
 let dasID = 0;
@@ -23,91 +27,161 @@ let controls = {
 };
 
 const app = new PIXI.Application({
-    width: (10 + 12) * 32,
+    width: (10 + 13) * 32,
     height: 25 * 32,
     antialias: true,
     resolution: 1
 });
 
+const app2 = new PIXI.Application({
+    width: (10 + 13) * 32,
+    height: 25 * 32,
+    antialias: true,
+    resolution: 1
+})
+
 document.getElementById('board').appendChild(app.view);
+document.getElementById('cobraBoard').appendChild(app2.view);
 
-let game = new Game(app);
+let queueP1 = new PRNG(255); // Separate seeds for garb and q
+let queueP2 = new PRNG(255);
+let garbP1 = new PRNG(127);
+let garbP2 = new PRNG(127);
+let game = new Game(app, queueP1, garbP1);
+let cobra = new Game(app2, queueP2, garbP2);
 
+
+function init(g){
+    g.init();
+    g.drawBorder();
+    g.state.sevenBag();
+    g.state.clearBoard();
+    g.state.spawnPiece();
+    g.drawActive();
+    g.drawQueue();
+}
+
+function initCobra(g){
+    g.init();
+    g.drawBorder();
+    g.state.bot = true;
+    g.state.sevenBag();
+    g.state.sevenBag();
+    g.state.sevenBag();
+    const queue = g.state.encodeQueue();
+    worker.postMessage({type: 'start', board: "", queue: queue});
+    g.state.clearBoard();
+    g.state.spawnPiece();
+    g.drawActive();
+    g.drawQueue();
+    g.state.heldPiece = g.state.queue.shift();
+
+}
+
+function handleKeyUp(event){
+    event.preventDefault();
+    keys[event.code] = false;
+    switch (event.code){
+        case controls["Move_Left"]:
+            dasID++;
+            break;
+
+        case controls["Move_Right"]:
+            dasID++;
+            break;
+
+        case controls["Move_Down"]:
+            sdID++;
+            break;
+    }
+}
+
+function handleKeyDown(event){
+    if (event.repeat) return;
+    event.preventDefault();
+
+
+    keys[event.code] = true;
+
+    switch (event.code){
+        case controls["Move_Left"]:
+            leftDown = true;
+            dasID++;
+            das("L", dasID);
+            break;
+
+        case controls["Move_Right"]:
+            rightDown = true;
+            dasID++;
+            das("R", dasID);
+            break;
+
+        case controls["Hard_Drop"]:
+            game.hardDrop();
+            break;
+
+        case controls["Rotate_CW"]:
+            game.rotateCW();
+            break;
+
+        case controls["Rotate_CCW"]:
+            game.rotateCCW();
+            break;
+
+        case controls["Hold"]:
+            game.hold();
+            break;
+
+        case controls["Move_Down"]:
+            sdID++;
+            sd(sdID);
+            break;
+    }
+}
 
 function start(){
     if (gameRunning) return;
     gameRunning = true;
-    game.init();
-    game.drawBorder();
-    game.state.sevenBag();
-    game.state.clearBoard();
-    game.state.spawnPiece();
-    game.drawActive();
-    game.drawQueue();
+    init(game);
+    initCobra(cobra);
 
-    document.addEventListener('keyup', (event) =>{
-        keys[event.code] = false;
-        switch (event.code){
-            case controls["Move_Left"]:
-                dasID++;
-                break;
+    worker.postMessage({type: 'suggest', depth: 10});
 
-            case controls["Move_Right"]:
-                dasID++;
-                break;
+    document.addEventListener('keyup', handleKeyUp);
 
-            case controls["Move_Down"]:
-                sdID++;
-                break;
-        }
-    });
-
-    document.addEventListener('keydown', (event) =>{
-        if (event.repeat) return;
-
-        keys[event.code] = true;
-
-        switch (event.code){
-            case controls["Move_Left"]:
-                leftDown = true;
-                dasID++;
-                das("L", dasID);
-                break;
-
-            case controls["Move_Right"]:
-                rightDown = true;
-                dasID++;
-                das("R", dasID);
-                break;
-
-            case controls["Hard_Drop"]:
-                game.hardDrop();
-                break;
-
-            case controls["Rotate_CW"]:
-                game.rotateCW();
-                break;
-
-            case controls["Rotate_CCW"]:
-                game.rotateCCW();
-                break;
-
-            case controls["Hold"]:
-                game.hold();
-                break;
-
-            case controls["Move_Down"]:
-                sdID++;
-                sd(sdID);
-                break;
-        }
-    });
+    document.addEventListener('keydown', handleKeyDown);
 
     gameLoop();
 }
 
 function gameLoop(){
+    const t1 = performance.now();
 
+    if (!gameRunning) {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keyup', handleKeyUp);
+        return;
+    }
+
+    while(game.state.outgoingGarbage.length > 0){
+        let g = game.state.outgoingGarbage.pop();
+        cobra.garbageIn(g);
+    }
+
+    while (cobra.state.outgoingGarbage.length > 0){
+        let g = cobra.state.outgoingGarbage.pop();
+        game.garbageIn(g);
+    }
+
+    if (!game.state.isValid(game.state.activePiece)) {
+        console.warn("Game over");
+        gameRunning = false;
+    }
+
+    const t2 = performance.now();
+    // Every frame, take care of garbage sending, and that's about it i think
+
+    setTimeout(gameLoop, 1000/20 - t2 + t1); // Garbage only sends at 20fps
 }
 
 function das(dir, id){
@@ -145,4 +219,33 @@ function sd(id){
             else clearInterval(loop);
         }, controls["SDARR"]);
     }
+}
+
+worker.onmessage = (e) => {
+    if (gameRunning === false) return;
+    if (e.data.value === 0) return;
+    if (e.data.type !== 'suggestion') return;
+
+    const move = e.data.move;
+    const spin = e.data.spin;
+
+    if (spin !== 1) cobra.state.tspinCheck.rotated = true;
+
+    if (move.location.piece === cobra.state.heldPiece) cobra.hold();
+
+    cobra.state.movePiece(move.location);
+
+    if (!cobra.state.isValid(cobra.state.activePiece)){
+        console.warn("Illegal move");
+        gameRunning = false;
+    }
+
+    let queue = cobra.hardDrop();
+
+    setTimeout(() => { // PPS limiter
+        if (queue !== ""){
+            worker.postMessage({type: 'newpiece', piece: queue});
+        }
+        worker.postMessage({type: 'suggest', depth: 10});
+    }, 1000);
 }
