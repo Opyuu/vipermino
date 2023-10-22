@@ -1,6 +1,11 @@
 const worker = new Worker('worker.js');
+let showSetting = false;
 
 let targetPPS = 1;
+let playingDepth = 10;
+let depth = 10;
+let ppsLimit = 1;
+let startTime = 0;
 
 let leftDown = false;
 let rightDown = false;
@@ -8,6 +13,12 @@ let dasID = 0;
 let sdID = 0;
 let keys = [];
 let gameRunning = false;
+
+const PPSslider = document.getElementById("PPSSlider");
+const ppsOutput = document.getElementById("PPSlimit");
+const depthSlider = document.getElementById("DepthSlider");
+const depthOutput = document.getElementById("Depth");
+
 
 let controls = {
     "DAS": 100,
@@ -43,18 +54,55 @@ const app2 = new PIXI.Application({
 document.getElementById('board').appendChild(app.view);
 document.getElementById('cobraBoard').appendChild(app2.view);
 
-let queueP1 = new PRNG(255); // Separate seeds for garb and q
-let queueP2 = new PRNG(255);
-let garbP1 = new PRNG(127);
-let garbP2 = new PRNG(127);
+const seed = Date.now();
+let queueP1 = new PRNG(seed); // Separate seeds for garb and q
+let queueP2 = new PRNG(seed);
+let garbP1 = new PRNG(seed);
+let garbP2 = new PRNG(seed);
 let game = new Game(app, queueP1, garbP1);
 let cobra = new Game(app2, queueP2, garbP2);
+
+
+function toggleSetting(){
+    const menu = document.getElementById('settings');
+    if (!showSetting){
+        showSetting = true;
+        menu.style.display = "block";
+    } else {
+        showSetting = false;
+        menu.style.display = "none";
+    }
+
+    for (let k in controls){
+        console.log(k);
+        document.getElementById(k).innerHTML = controls[k];
+    }
+
+    document.getElementById('DAS').value = controls["DAS"]; // Displays current DAS
+    document.getElementById('DAS').removeAttribute("readonly"); // Attempt at fixing input box bug
+    document.getElementById('ARR').value = controls["ARR"]; // Displays current ARR
+    document.getElementById('SDARR').value = controls["SDARR"]; // Displays current SD ARR
+
+}
+
+PPSslider.oninput = function() {
+    ppsOutput.innerHTML = "PPS limit: " + this.value;
+    ppsLimit = parseFloat(this.value);
+}
+
+depthSlider.oninput = function() {
+    depthOutput.innerHTML = "Depth: " + this.value;
+    depth = parseInt(this.value);
+}
 
 
 function init(g){
     g.init();
     g.drawBorder();
     g.state.sevenBag();
+    g.state.sevenBag();
+    g.state.sevenBag();
+
     g.state.clearBoard();
     g.state.spawnPiece();
     g.drawActive();
@@ -75,7 +123,26 @@ function initCobra(g){
     g.drawActive();
     g.drawQueue();
     g.state.heldPiece = g.state.queue.shift();
+}
 
+
+function reset(){
+    game.destroy();
+    cobra.destroy();
+
+    worker.postMessage({type: 'quit'});
+
+    const seed = Date.now();
+    let queueP1 = new PRNG(seed); // Separate seeds for garb and q
+    let queueP2 = new PRNG(seed);
+    let garbP1 = new PRNG(seed);
+    let garbP2 = new PRNG(seed);
+
+    game = new Game(app, queueP1, garbP1);
+    cobra = new Game(app2, queueP2, garbP2);
+
+
+    gameRunning = false;
 }
 
 function handleKeyUp(event){
@@ -139,13 +206,52 @@ function handleKeyDown(event){
     }
 }
 
+function change(button){
+    const changeSetting = (e) => {
+        e.preventDefault();
+
+        console.log(e.id);
+
+        if (Object.values(controls).includes(e.code)){
+            if(e.code === controls[button.name]){
+                controls[button.id] = e.code;
+                document.getElementById(button.id).innerHTML = e.code;
+                document.removeEventListener('keydown', changeSetting); // Remove event listener after the setting has been set
+                return;
+            }
+            document.getElementById(button.id).innerHTML = "That key is already used";
+
+        }
+        else{
+            controls[button.id] = e.code;
+            document.getElementById(button.id).innerHTML = e.code;
+            document.removeEventListener('keydown', changeSetting); // Remove event listener after the setting has been set
+            return;
+        }
+
+    };
+
+    console.log(button.id);
+
+    document.getElementById(button.id).innerHTML = controls[button.id];
+
+    document.addEventListener('keydown', changeSetting, false);
+    document.getElementById(button.id).innerHTML = "enter something";
+    button.blur();
+}
+
 function start(){
     if (gameRunning) return;
     gameRunning = true;
+
     init(game);
     initCobra(cobra);
 
+    targetPPS = ppsLimit;
+    playingDepth = depth;
+
     worker.postMessage({type: 'suggest', depth: 10});
+    startTime = performance.now();
 
     document.addEventListener('keyup', handleKeyUp);
 
@@ -156,6 +262,9 @@ function start(){
 
 function gameLoop(){
     const t1 = performance.now();
+
+    let timeElapsed = t1 - startTime;
+    console.log(cobra.state.pieceCount / timeElapsed * 1000);
 
     if (!gameRunning) {
         document.removeEventListener('keydown', handleKeyDown);
@@ -241,11 +350,15 @@ worker.onmessage = (e) => {
     }
 
     let queue = cobra.hardDrop();
+    // console.log(queue);
+
+    let t = performance.now() - startTime;
+    let duration = ((cobra.state.pieceCount + 1) / targetPPS * 1000) - t;
 
     setTimeout(() => { // PPS limiter
         if (queue !== ""){
             worker.postMessage({type: 'newpiece', piece: queue});
         }
-        worker.postMessage({type: 'suggest', depth: 10});
-    }, 1000);
+        worker.postMessage({type: 'suggest', depth: playingDepth});
+    }, duration);
 }

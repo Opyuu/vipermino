@@ -144,7 +144,7 @@ class GameState{
         this.placePiece(this.activePiece);
 
         this.pieceCount++;
-        if (this.pieceCount % 7){
+        if (this.pieceCount % 7 === 0){
             queue = this.sevenBag();
         }
 
@@ -470,7 +470,7 @@ class GameState{
 
     drawShadow(graphics){
         if(this.activePiece.type === piece_T.NO_PIECE) return;
-        let ghost = new ActivePiece(this.activePiece.type, this.activePiece.rotation, this.activePiece.x, this.activePiece.y);
+        let ghost = new ActivePiece(this.activePiece.type, this.activePiece.rotation, this.activePiece.x, this.activePiece.y - 1);
 
         while(this.isValid(ghost)){
             ghost.y--;
@@ -536,10 +536,18 @@ class GameState{
             translationMatrix.scale(1/BLOCK_SIZE, 1/BLOCK_SIZE);
             translationMatrix.translate(xoffset - 2, yoffset);
 
-            graphics.beginTextureFill({
-                texture: PIECE_TEXTURE[pieceType],
-                matrix: translationMatrix
-            });
+
+            if (pieceType === piece_T.GARBAGE){
+                graphics.beginTextureFill({
+                    texture: PIECE_TEXTURE[pieceType],
+                    matrix: translationMatrix
+                });
+            } else {
+                graphics.beginTextureFill({
+                    texture: CONNECTED_TEXTURES[pieceType][mino],
+                    matrix: translationMatrix
+                });
+            }
             graphics.drawRect(x, y, 1, 1);
             graphics.endFill();
         }
@@ -587,7 +595,10 @@ class GameState{
         this.activePiece.x = pieceInfo.x;
         this.activePiece.y = pieceInfo.y;
         this.activePiece.rotation = pieceInfo.rotation;
-        this.type = pieceInfo.piece;
+
+        if (this.activePiece.type !== pieceInfo.piece) console.warn("Piece error!");
+
+        this.activePiece.type = pieceInfo.piece;
     }
 
     toFumen(){

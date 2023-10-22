@@ -19,6 +19,18 @@ class Game{
 
     destroy(){
         this.boardGraphics.clear();
+        this.borderGraphics.clear();
+        this.activeGraphics.clear();
+        this.queueGraphics.clear();
+        this.holdGraphics.clear();
+        this.garbageGraphics.clear();
+
+        this.app.stage.removeChild(this.boardGraphics);
+        this.app.stage.removeChild(this.borderGraphics);
+        this.app.stage.removeChild(this.activeGraphics);
+        this.app.stage.removeChild(this.queueGraphics);
+        this.app.stage.removeChild(this.holdGraphics);
+        this.app.stage.removeChild(this.garbageGraphics);
     }
 
     init(){
@@ -141,16 +153,18 @@ class Game{
 
     hardDrop(){
         let queue = this.state.hardDrop();
+        this.drawBoard();
+
         if (this.state.isValid(this.state.activePiece)) {
-            this.drawBoard();
             this.drawActive();
             this.drawQueue();
             this.drawHold();
             this.drawGarbage();
+        } else{
+            this.state.activePiece.type = piece_T.NO_PIECE;
+            this.drawActive();
         }
-        // Calculate garbage sent and send said garbage
 
-        // Update garbage queue render
         return queue;
     }
 
