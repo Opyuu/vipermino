@@ -194,6 +194,11 @@ class Game{
         this.drawActive();
     }
 
+    rotate180(){
+        this.state.rotate180();
+        this.drawActive();
+    }
+
     spawnGarbage(count){
         this.state.spawnGarbage(count);
 

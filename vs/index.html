@@ -16,10 +16,14 @@
   <div id="cobraBoard"></div>
   <button id="play" onclick="start(); this.blur();" class="buttons">Play</button>
   <button id="showSetting" onclick="toggleSetting(); this.blur();" class="buttons">Settings</button>
-  <button onclick="reset()" id="reset" class="buttons">Reset</button>
+  <button onclick="reset()" id="resetButton" class="buttons">Reset</button>
 
   <div id="settings">
     <p class="settingcontent">SETTINGS</p>
+
+    <button onclick="showPlayer()">Controls</button>
+    <button onclick="showBot()">Bot</button>
+    <br> <br>
 
     <div id="playerSettings">
       <label for="DAS" class="labels">DAS: (In milliseconds)</label>
@@ -74,14 +78,12 @@
       <button type="button" id="Hard_Drop" class="controls" onclick="change(this)"></button>
       <br><br>
 
-      <label for="ResetControls" class="labels">Reset:</label>
-      <button type="button" id="ResetControls" class="controls" onclick="change(this)"></button>
+      <label for="Reset" class="labels">Reset:</label>
+      <button type="button" id="Reset" class="controls" onclick="change(this)"></button>
       <br><br>
-      <button onclick="toggleSetting()" class="labels">Save & Close</button>
-
     </div>
 
-    <div id="botSettings">
+    <div id="botSettings" style="display: none">
       <h1>Settings will change on the next game start.</h1>
       <label class="settingcontent" for="PPSSlider" id="PPSlimit">PPS limit: 1</label>
       <div class="slidercontainer">
@@ -92,11 +94,9 @@
       <div class="slidercontainer">
         <input type="range" min="5" max="10" value="10" class="slider" id="DepthSlider">
       </div>
+      <br><br>
     </div>
 
-    <br>
-
-    <br><br>
     <button class="buttons" onclick="toggleSetting()">Save & Close</button>
   </div>
 

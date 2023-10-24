@@ -211,6 +211,17 @@ class GameState{
         return false;
     }
 
+    rotate180(){
+        if (this.activePiece.type === piece_T.O) return true;
+
+        this.activePiece.rotation = (this.activePiece.rotation + 2) % 4;
+
+        if (this.isValid(this.activePiece)) return true;
+
+        this.activePiece.rotation = (this.activePiece.rotation + 2) % 4;
+        return false;
+    }
+
     clearLine(line){
         for (let col = 0; col < 10; col++){
             this.board[col][line] = new MinoInfo(0, 0, 0);
@@ -295,7 +306,6 @@ class GameState{
         let lines = this.calcLines(lineCount, this.combo, tspin);
 
         this.sendGarbage(lines);
-        console.log(lines);
 
         if (this.isEmpty()) this.sendGarbage(10); // PC!
 

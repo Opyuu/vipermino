@@ -62,27 +62,87 @@ let garbP2 = new PRNG(seed);
 let game = new Game(app, queueP1, garbP1);
 let cobra = new Game(app2, queueP2, garbP2);
 
+function load_settings(){
+    controls = localStorage.getItem("controls");
+    if (controls !== null){
+        controls = JSON.parse(controls);
+    }
+    else{ // If no controls are stored, use default
+        console.log("Default controls used");
+        controls = {
+            "DAS": 100,
+            "ARR": 30,
+            "SDARR": 0,
+            "Move_Down": 'ArrowDown',
+            "Move_Left": 'ArrowLeft',
+            "Move_Right": 'ArrowRight',
+            "Rotate_CW": 'ArrowUp',
+            "Rotate_CW_Secondary": 'None',
+            "Rotate_CCW": 'KeyZ',
+            "Rotate_CCW_Secondary": 'None',
+            "Rotate_180": 'KeyA',
+            "Hold": 'ShiftLeft',
+            "Hard_Drop": 'Space',
+            "Reset": 'KeyR'
+        };
+    }
+
+    let botSettings = localStorage.getItem("botSettings");
+    if (botSettings !== null){
+        botSettings = JSON.parse(botSettings);
+        ppsLimit = botSettings["PPS"];
+        depth = botSettings["Depth"];
+    } else{
+        ppsLimit = 1;
+        depth = 10;
+    }
+}
+
+function save_settings(){
+    localStorage.setItem('controls', JSON.stringify(controls)); // This is it??
+    const botSettings = {
+        "PPS": ppsLimit,
+        "Depth": depth
+    }
+    localStorage.setItem('botSettings', JSON.stringify(botSettings));
+}
 
 function toggleSetting(){
     const menu = document.getElementById('settings');
     if (!showSetting){
+        load_settings();
         showSetting = true;
         menu.style.display = "block";
+
+        document.removeEventListener('keyup', handleKeyUp);
+
+        document.removeEventListener('keydown', handleKeyDown);
+
+        document.getElementById("DAS").value = controls["DAS"];
+        document.getElementById("ARR").value = controls["ARR"];
+        document.getElementById("SDARR").value = controls["SDARR"];
+
+        PPSslider.value = ppsLimit;
+        ppsOutput.innerHTML = "PPS limit: " + ppsLimit;
+        depthSlider.value = depth;
+        depthOutput.innerHTML = "Depth: " + depth;
     } else {
         showSetting = false;
         menu.style.display = "none";
+
+        controls["DAS"] = parseInt(document.getElementById("DAS").value);
+        controls["ARR"] = parseInt(document.getElementById("ARR").value);
+        controls["SDARR"] = parseInt(document.getElementById("SDARR").value);
+
+        document.addEventListener('keyup', handleKeyUp);
+        document.addEventListener('keydown', handleKeyDown);
+
+        save_settings();
     }
 
     for (let k in controls){
-        console.log(k);
         document.getElementById(k).innerHTML = controls[k];
     }
-
-    document.getElementById('DAS').value = controls["DAS"]; // Displays current DAS
-    document.getElementById('DAS').removeAttribute("readonly"); // Attempt at fixing input box bug
-    document.getElementById('ARR').value = controls["ARR"]; // Displays current ARR
-    document.getElementById('SDARR').value = controls["SDARR"]; // Displays current SD ARR
-
 }
 
 PPSslider.oninput = function() {
@@ -150,11 +210,11 @@ function handleKeyUp(event){
     keys[event.code] = false;
     switch (event.code){
         case controls["Move_Left"]:
-            dasID++;
+            if (!keys[controls["Move_Right"]]) dasID++;
             break;
 
         case controls["Move_Right"]:
-            dasID++;
+            if (!keys[controls["Move_Left"]]) dasID++;
             break;
 
         case controls["Move_Down"]:
@@ -191,8 +251,20 @@ function handleKeyDown(event){
             game.rotateCW();
             break;
 
+        case controls["Rotate_CW_Secondary"]:
+            game.rotateCW();
+            break;
+
         case controls["Rotate_CCW"]:
             game.rotateCCW();
+            break;
+
+        case controls["Rotate_CCW_Secondary"]:
+            game.rotateCCW();
+            break;
+
+        case controls["Rotate_180"]:
+            game.rotate180();
             break;
 
         case controls["Hold"]:
@@ -231,7 +303,6 @@ function change(button){
 
     };
 
-    console.log(button.id);
 
     document.getElementById(button.id).innerHTML = controls[button.id];
 
@@ -240,12 +311,29 @@ function change(button){
     button.blur();
 }
 
+function showBot(){
+    const bot = document.getElementById('botSettings');
+    const player = document.getElementById('playerSettings');
+    player.style.display = "none";
+    bot.style.display = "block";
+}
+
+function showPlayer(){
+    const bot = document.getElementById('botSettings');
+    const player = document.getElementById('playerSettings');
+
+    bot.style.display = "none";
+    player.style.display = "block";
+}
+
 function start(){
-    if (gameRunning) return;
+    if (gameRunning || showSetting) return;
     gameRunning = true;
 
     init(game);
     initCobra(cobra);
+
+    load_settings();
 
     targetPPS = ppsLimit;
     playingDepth = depth;
@@ -262,9 +350,6 @@ function start(){
 
 function gameLoop(){
     const t1 = performance.now();
-
-    let timeElapsed = t1 - startTime;
-    console.log(cobra.state.pieceCount / timeElapsed * 1000);
 
     if (!gameRunning) {
         document.removeEventListener('keydown', handleKeyDown);
