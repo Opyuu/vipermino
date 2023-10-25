@@ -13,6 +13,7 @@ let dasID = 0;
 let sdID = 0;
 let keys = [];
 let gameRunning = false;
+let gameOver = false;
 
 const PPSslider = document.getElementById("PPSSlider");
 const ppsOutput = document.getElementById("PPSlimit");
@@ -187,6 +188,8 @@ function initCobra(g){
 
 
 function reset(){
+    document.removeEventListener('keydown', restart);
+
     game.destroy();
     cobra.destroy();
 
@@ -203,6 +206,7 @@ function reset(){
 
 
     gameRunning = false;
+    gameOver = false;
 }
 
 function handleKeyUp(event){
@@ -275,6 +279,19 @@ function handleKeyDown(event){
             sdID++;
             sd(sdID);
             break;
+
+        case controls["Reset"]:
+            reset();
+            start();
+            break;
+    }
+}
+
+function restart(event){
+    if (event.repeat) return;  // Make sure only restart once
+    if (event.code === controls["Reset"]){
+        reset();
+        start();
     }
 }
 
@@ -284,23 +301,10 @@ function change(button){
 
         console.log(e.id);
 
-        if (Object.values(controls).includes(e.code)){
-            if(e.code === controls[button.name]){
-                controls[button.id] = e.code;
-                document.getElementById(button.id).innerHTML = e.code;
-                document.removeEventListener('keydown', changeSetting); // Remove event listener after the setting has been set
-                return;
-            }
-            document.getElementById(button.id).innerHTML = "That key is already used";
-
-        }
-        else{
-            controls[button.id] = e.code;
-            document.getElementById(button.id).innerHTML = e.code;
-            document.removeEventListener('keydown', changeSetting); // Remove event listener after the setting has been set
-            return;
-        }
-
+        controls[button.id] = e.code;
+        document.getElementById(button.id).innerHTML = e.code;
+        document.removeEventListener('keydown', changeSetting); // Remove event listener after the setting has been set
+        button.blur();
     };
 
 
@@ -328,7 +332,12 @@ function showPlayer(){
 
 function start(){
     if (gameRunning || showSetting) return;
+
+    if (gameOver) reset();
+
     gameRunning = true;
+
+
 
     init(game);
     initCobra(cobra);
@@ -354,6 +363,7 @@ function gameLoop(){
     if (!gameRunning) {
         document.removeEventListener('keydown', handleKeyDown);
         document.removeEventListener('keyup', handleKeyUp);
+        document.addEventListener('keydown', restart);
         return;
     }
 
@@ -370,6 +380,7 @@ function gameLoop(){
     if (!game.state.isValid(game.state.activePiece)) {
         console.warn("Game over");
         gameRunning = false;
+        gameOver = true;
     }
 
     const t2 = performance.now();
@@ -432,6 +443,7 @@ worker.onmessage = (e) => {
     if (!cobra.state.isValid(cobra.state.activePiece)){
         console.warn("Illegal move");
         gameRunning = false;
+        gameOver = true;
     }
 
     let queue = cobra.hardDrop();
