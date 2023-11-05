@@ -170,8 +170,8 @@ class GameState{
     }
 
     testRotate(kickCoords){
-        for (let kick = 0; kick < 5; kick++){
-            let kickCoord = kickCoords[kick];
+        let kick = 0
+        for (let kickCoord of kickCoords){
             this.activePiece.x += kickCoord.x;
             this.activePiece.y += kickCoord.y;
 
@@ -183,7 +183,9 @@ class GameState{
 
             this.activePiece.x -= kickCoord.x;
             this.activePiece.y -= kickCoord.y;
+            kick++;
         }
+
         return false;
     }
 
@@ -214,9 +216,11 @@ class GameState{
     rotate180(){
         if (this.activePiece.type === piece_T.O) return true;
 
+        let kickCoords = KICKS_180[+(this.activePiece.type===piece_T.I)][this.activePiece.rotation];
+
         this.activePiece.rotation = (this.activePiece.rotation + 2) % 4;
 
-        if (this.isValid(this.activePiece)) return true;
+        if (this.testRotate(kickCoords)) return true;
 
         this.activePiece.rotation = (this.activePiece.rotation + 2) % 4;
         return false;
@@ -308,7 +312,7 @@ class GameState{
         this.sendGarbage(lines);
 
         if (this.isEmpty()) this.sendGarbage(10); // PC!
-
+        
         return clear;
     }
 

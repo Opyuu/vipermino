@@ -163,6 +163,7 @@ class Game{
         } else{
             this.state.activePiece.type = piece_T.NO_PIECE;
             this.drawActive();
+            this.drawGarbage();
         }
 
         return queue;

@@ -22,9 +22,9 @@ const depthOutput = document.getElementById("Depth");
 
 
 let controls = {
-    "DAS": 100,
-    "ARR": 20,
-    "SDARR": 0,
+    "DAS": "100",
+    "ARR": "20",
+    "SDARR": "0",
     "Move_Down": 'ArrowDown',
     "Move_Left": 'ArrowLeft',
     "Move_Right": 'ArrowRight',
@@ -131,9 +131,9 @@ function toggleSetting(){
         showSetting = false;
         menu.style.display = "none";
 
-        controls["DAS"] = parseInt(document.getElementById("DAS").value);
-        controls["ARR"] = parseInt(document.getElementById("ARR").value);
-        controls["SDARR"] = parseInt(document.getElementById("SDARR").value);
+        controls["DAS"] = document.getElementById("DAS").value;
+        controls["ARR"] = document.getElementById("ARR").value;
+        controls["SDARR"] = document.getElementById("SDARR").value;
 
         document.addEventListener('keyup', handleKeyUp);
         document.addEventListener('keydown', handleKeyDown);
@@ -368,12 +368,12 @@ function gameLoop(){
     }
 
     while(game.state.outgoingGarbage.length > 0){
-        let g = game.state.outgoingGarbage.pop();
+        let g = game.state.outgoingGarbage.shift();
         cobra.garbageIn(g);
     }
 
     while (cobra.state.outgoingGarbage.length > 0){
-        let g = cobra.state.outgoingGarbage.pop();
+        let g = cobra.state.outgoingGarbage.shift();
         game.garbageIn(g);
     }
 
@@ -412,7 +412,7 @@ function move(dir){
 }
 
 function sd(id){
-    if (controls["SDARR"] === 0){
+    if (controls["SDARR"] === "0"){
         let loop = setInterval(() => {
             if (sdID === id) while (game.moveDown()){}
             else clearInterval(loop);
