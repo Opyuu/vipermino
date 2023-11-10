@@ -2,8 +2,8 @@ const worker = new Worker('worker.js');
 let showSetting = false;
 
 let targetPPS = 1;
-let playingDepth = 10;
-let depth = 10;
+let playingDepth = 5;
+let depth = 5;
 let ppsLimit = 1;
 let startTime = 0;
 
@@ -347,7 +347,7 @@ function start(){
     targetPPS = ppsLimit;
     playingDepth = depth;
 
-    worker.postMessage({type: 'suggest', depth: 10});
+    worker.postMessage({type: 'suggest', depth: playingDepth});
     startTime = performance.now();
 
     document.addEventListener('keyup', handleKeyUp);

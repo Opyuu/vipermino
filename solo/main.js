@@ -30,7 +30,7 @@ game.init();
 let gameRunning = false;
 let startTime;
 let moveDelay = 1000/3;
-let depth = 10;
+let depth = 5;
 let showSetting = false;
 let fumen = "";
 
