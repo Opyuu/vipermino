@@ -1,20 +1,34 @@
 class Game{
-    state;
-    app;
-    boardGraphics;
-
-    constructor(app, shuffler, garbShuffler) {
-        this.state = new GameState();
+    constructor(app, queueSeed, garbSeed){
+        this.state = new GameState(queueSeed, garbSeed);
         this.app = app;
+
         this.boardGraphics = new PIXI.Graphics();
         this.borderGraphics = new PIXI.Graphics(); // Includes grid etc, is drawn at the very back
         this.activeGraphics = new PIXI.Graphics();
         this.queueGraphics = new PIXI.Graphics();
         this.holdGraphics = new PIXI.Graphics();
         this.garbageGraphics = new PIXI.Graphics();
+    }
 
-        this.state.shuffler = shuffler;
-        this.state.garbShuffler = garbShuffler;
+    get _state(){
+        return this.state;
+    }
+
+    // <----------- DRAWING FUNCTIONS ------------>
+    init(){
+        this.boardGraphics.position.set(7 * BLOCK_SIZE, 0);
+        this.boardGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.borderGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.activeGraphics.position.set(7 * BLOCK_SIZE, 0);
+        this.activeGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.queueGraphics.position.set((6 + COLS + 1) * BLOCK_SIZE, 4 * BLOCK_SIZE);
+        this.queueGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.holdGraphics.position.set(0, 4 * BLOCK_SIZE);
+        this.holdGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+
+        this.garbageGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.garbageGraphics.position.set(6 * BLOCK_SIZE, 0);
     }
 
     destroy(){
@@ -33,19 +47,13 @@ class Game{
         this.app.stage.removeChild(this.garbageGraphics);
     }
 
-    init(){
-        this.boardGraphics.position.set(7 * BLOCK_SIZE, 0);
-        this.boardGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.borderGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.activeGraphics.position.set(7 * BLOCK_SIZE, 0);
-        this.activeGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.queueGraphics.position.set((6 + COLS + 1) * BLOCK_SIZE, 4 * BLOCK_SIZE);
-        this.queueGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.holdGraphics.position.set(0, 4 * BLOCK_SIZE);
-        this.holdGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
 
-        this.garbageGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
-        this.garbageGraphics.position.set(6 * BLOCK_SIZE, 0);
+    drawActive(){
+        this.app.stage.removeChild(this.activeGraphics);
+        this.activeGraphics.clear();
+        this.state.drawShadow(this.activeGraphics);
+        this.state.drawActive(this.activeGraphics);
+        this.app.stage.addChild(this.activeGraphics);
 
     }
 
@@ -55,6 +63,7 @@ class Game{
         this.state.drawBoard(this.boardGraphics);
         this.app.stage.addChild(this.boardGraphics);
     }
+
 
     drawBorder(){
         this.app.stage.removeChild(this.borderGraphics);
@@ -111,16 +120,6 @@ class Game{
         this.borderGraphics.lineTo(7, 24 + offset);
         this.borderGraphics.moveTo(7 - offset, 4 - offset);
         this.borderGraphics.lineTo(7 - offset, 5);
-
-
-    }
-
-    drawActive(){
-        this.app.stage.removeChild(this.activeGraphics);
-        this.activeGraphics.clear();
-        this.state.drawShadow(this.activeGraphics);
-        this.state.drawActive(this.activeGraphics);
-        this.app.stage.addChild(this.activeGraphics);
     }
 
     drawQueue(){
@@ -133,7 +132,7 @@ class Game{
     drawHold(){
         this.app.stage.removeChild(this.holdGraphics);
         this.holdGraphics.clear();
-        this.state.drawHold(this.holdGraphics);
+        this.state.drawHold(this.holdGraphics, this.canHold);
         this.app.stage.addChild(this.holdGraphics);
     }
 
@@ -143,77 +142,4 @@ class Game{
         this.state.drawGarbage(this.garbageGraphics);
         this.app.stage.addChild(this.garbageGraphics);
     }
-
-    hold(){
-        this.state.hold();
-        this.drawHold();
-        this.drawActive();
-        this.drawQueue();
-    }
-
-    hardDrop(){
-        let queue = this.state.hardDrop();
-        this.drawBoard();
-
-        if (this.state.isValid(this.state.activePiece)) {
-            this.drawActive();
-            this.drawQueue();
-            this.drawHold();
-            this.drawGarbage();
-        } else{
-            this.state.activePiece.type = piece_T.NO_PIECE;
-            this.drawActive();
-            this.drawGarbage();
-        }
-
-        return queue;
-    }
-
-    moveLeft(){
-        this.state.moveLeft();
-        this.drawActive();
-    }
-
-    moveRight(){
-        this.state.moveRight();
-        this.drawActive();
-    }
-
-    moveDown(){
-        let status = this.state.moveDown();
-        this.drawActive();
-        return status;
-    }
-
-    rotateCW(){
-        this.state.rotateCW();
-        this.drawActive();
-    }
-
-    rotateCCW(){
-        this.state.rotateCCW();
-        this.drawActive();
-    }
-
-    rotate180(){
-        this.state.rotate180();
-        this.drawActive();
-    }
-
-    spawnGarbage(count){
-        this.state.spawnGarbage(count);
-
-        this.drawBoard();
-        this.drawActive();
-        // Control number of garbage spawned and columns where they spawn
-    }
-
-    garbageIn(lines){
-        this.state.garbageIn(lines);
-
-
-        this.drawGarbage();
-        // Update garbage queue render
-    }
 }
-

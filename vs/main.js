@@ -1,4 +1,4 @@
-const worker = new Worker('worker.js');
+let worker = new Worker('../assets/js/worker.js');
 let showSetting = false;
 
 let targetPPS = 1;
@@ -14,6 +14,9 @@ let sdID = 0;
 let keys = [];
 let gameRunning = false;
 let gameOver = false;
+let kill = false;
+let startAgain = false;
+let waiting = false;
 
 const PPSslider = document.getElementById("PPSSlider");
 const ppsOutput = document.getElementById("PPSlimit");
@@ -56,157 +59,26 @@ document.getElementById('board').appendChild(app.view);
 document.getElementById('cobraBoard').appendChild(app2.view);
 
 const seed = Date.now();
-let queueP1 = new PRNG(seed); // Separate seeds for garb and q
-let queueP2 = new PRNG(seed);
-let garbP1 = new PRNG(seed);
-let garbP2 = new PRNG(seed);
-let game = new Game(app, queueP1, garbP1);
-let cobra = new Game(app2, queueP2, garbP2);
 
-function load_settings(){
-    controls = localStorage.getItem("controls");
-    if (controls !== null){
-        controls = JSON.parse(controls);
-    }
-    else{ // If no controls are stored, use default
-        console.log("Default controls used");
-        controls = {
-            "DAS": 100,
-            "ARR": 30,
-            "SDARR": 0,
-            "Move_Down": 'ArrowDown',
-            "Move_Left": 'ArrowLeft',
-            "Move_Right": 'ArrowRight',
-            "Rotate_CW": 'ArrowUp',
-            "Rotate_CW_Secondary": 'None',
-            "Rotate_CCW": 'KeyZ',
-            "Rotate_CCW_Secondary": 'None',
-            "Rotate_180": 'KeyA',
-            "Hold": 'ShiftLeft',
-            "Hard_Drop": 'Space',
-            "Reset": 'KeyR'
-        };
-    }
-
-    let botSettings = localStorage.getItem("botSettings");
-    if (botSettings !== null){
-        botSettings = JSON.parse(botSettings);
-        ppsLimit = botSettings["PPS"];
-        depth = botSettings["Depth"];
-    } else{
-        ppsLimit = 1;
-        depth = 10;
-    }
-}
-
-function save_settings(){
-    localStorage.setItem('controls', JSON.stringify(controls)); // This is it??
-    const botSettings = {
-        "PPS": ppsLimit,
-        "Depth": depth
-    }
-    localStorage.setItem('botSettings', JSON.stringify(botSettings));
-}
-
-function toggleSetting(){
-    const menu = document.getElementById('settings');
-    if (!showSetting){
-        load_settings();
-        showSetting = true;
-        menu.style.display = "block";
-
-        document.removeEventListener('keyup', handleKeyUp);
-
-        document.removeEventListener('keydown', handleKeyDown);
-
-        document.getElementById("DAS").value = controls["DAS"];
-        document.getElementById("ARR").value = controls["ARR"];
-        document.getElementById("SDARR").value = controls["SDARR"];
-
-        PPSslider.value = ppsLimit;
-        ppsOutput.innerHTML = "PPS limit: " + ppsLimit;
-        depthSlider.value = depth;
-        depthOutput.innerHTML = "Depth: " + depth;
-    } else {
-        showSetting = false;
-        menu.style.display = "none";
-
-        controls["DAS"] = document.getElementById("DAS").value;
-        controls["ARR"] = document.getElementById("ARR").value;
-        controls["SDARR"] = document.getElementById("SDARR").value;
-
-        document.addEventListener('keyup', handleKeyUp);
-        document.addEventListener('keydown', handleKeyDown);
-
-        save_settings();
-    }
-
-    for (let k in controls){
-        document.getElementById(k).innerHTML = controls[k];
-    }
-}
-
-PPSslider.oninput = function() {
-    ppsOutput.innerHTML = "PPS limit: " + this.value;
-    ppsLimit = parseFloat(this.value);
-}
-
-depthSlider.oninput = function() {
-    depthOutput.innerHTML = "Depth: " + this.value;
-    depth = parseInt(this.value);
-}
-
-
-function init(g){
-    g.init();
-    g.drawBorder();
-    g.state.sevenBag();
-    g.state.sevenBag();
-    g.state.sevenBag();
-
-    g.state.clearBoard();
-    g.state.spawnPiece();
-    g.drawActive();
-    g.drawQueue();
-}
-
-function initCobra(g){
-    g.init();
-    g.drawBorder();
-    g.state.bot = true;
-    g.state.sevenBag();
-    g.state.sevenBag();
-    g.state.sevenBag();
-    const queue = g.state.encodeQueue();
-    worker.postMessage({type: 'start', board: "", queue: queue});
-    g.state.clearBoard();
-    g.state.spawnPiece();
-    g.drawActive();
-    g.drawQueue();
-    g.state.heldPiece = g.state.queue.shift();
-}
+let game = new Player(app, seed, seed);
+let cobra = new Bot(app2, seed, seed, worker);
 
 
 function reset(){
+    if (!gameRunning && !gameOver) return;
+
     document.removeEventListener('keydown', restart);
 
     game.destroy();
     cobra.destroy();
 
-    worker.postMessage({type: 'quit'});
-
     const seed = Date.now();
-    let queueP1 = new PRNG(seed); // Separate seeds for garb and q
-    let queueP2 = new PRNG(seed);
-    let garbP1 = new PRNG(seed);
-    let garbP2 = new PRNG(seed);
-
-    game = new Game(app, queueP1, garbP1);
-    cobra = new Game(app2, queueP2, garbP2);
-
+    game = new Player(app, seed, seed);
+    cobra = new Bot(app2, seed, seed, worker);
 
     gameRunning = false;
     gameOver = false;
+    kill = true;
 }
 
 function handleKeyUp(event){
@@ -288,59 +160,75 @@ function handleKeyDown(event){
 }
 
 function restart(event){
-    if (event.repeat) return;  // Make sure only restart once
-    if (event.code === controls["Reset"]){
-        reset();
-        start();
+    if (event.repeat) return;
+    if (event.code === controls["Reset"]) {
+
+        if (gameOver) {
+            start();
+        } else{
+            console.warn("resetting");
+
+            restart();
+
+            startAgain = true;
+        }
     }
 }
 
-function change(button){
-    const changeSetting = (e) => {
-        e.preventDefault();
+function initPlayer(){
+    game.init();
+    drawBorder(game);
+    game.state.sevenBag();
+    game.state.sevenBag();
+    game.state.sevenBag();
 
-        console.log(e.id);
-
-        controls[button.id] = e.code;
-        document.getElementById(button.id).innerHTML = e.code;
-        document.removeEventListener('keydown', changeSetting); // Remove event listener after the setting has been set
-        button.blur();
-    };
-
-
-    document.getElementById(button.id).innerHTML = controls[button.id];
-
-    document.addEventListener('keydown', changeSetting, false);
-    document.getElementById(button.id).innerHTML = "enter something";
-    button.blur();
+    game.state.clearBoard();
+    game.state.spawnPiece();
+    drawActive(game);
+    drawQueue(game);
 }
 
-function showBot(){
-    const bot = document.getElementById('botSettings');
-    const player = document.getElementById('playerSettings');
-    player.style.display = "none";
-    bot.style.display = "block";
-}
+function initBot(){
+    cobra.init();
+    drawBorder(cobra);
+    cobra.state.sevenBag();
+    cobra.state.sevenBag();
+    cobra.state.sevenBag();
 
-function showPlayer(){
-    const bot = document.getElementById('botSettings');
-    const player = document.getElementById('playerSettings');
+    const queue = cobra.encodeQueue();
 
-    bot.style.display = "none";
-    player.style.display = "block";
+    cobra.state.clearBoard();
+    cobra.state.spawnPiece();
+    cobra.hold();
+    drawActive(cobra);
+    drawQueue(cobra);
+
+
+    worker.postMessage({type: 'start', board: "", queue: queue});
+
+
 }
 
 function start(){
+    if (kill && waiting) {
+        startAgain = true;
+        return;
+    }
+
     if (gameRunning || showSetting) return;
+
+    if (!waiting){
+        worker.postMessage({type: 'quit'});
+    }
+
+    dasID++;
 
     if (gameOver) reset();
 
     gameRunning = true;
 
-
-
-    init(game);
-    initCobra(cobra);
+    initPlayer();
+    initBot();
 
     load_settings();
 
@@ -353,6 +241,8 @@ function start(){
     document.addEventListener('keyup', handleKeyUp);
 
     document.addEventListener('keydown', handleKeyDown);
+
+    kill = false;
 
     gameLoop();
 }
@@ -389,6 +279,8 @@ function gameLoop(){
     setTimeout(gameLoop, 1000/20 - t2 + t1); // Garbage only sends at 20fps
 }
 
+
+// Movement functions
 function das(dir, id){
     move(dir);
     setTimeout(() => {
@@ -426,36 +318,66 @@ function sd(id){
     }
 }
 
+
+function tempInit(){
+    game.init();
+    game.state.clearBoard();
+    game.state.sevenBag();
+    game.state.sevenBag();
+    game.state.sevenBag();
+
+    game.state.spawnPiece();
+    drawActive(game);
+    drawBoard(game);
+    drawBorder(game);
+    drawQueue(game);
+
+    document.addEventListener('keyup', handleKeyUp);
+
+    document.addEventListener('keydown', handleKeyDown);
+}
+
 worker.onmessage = (e) => {
-    if (gameRunning === false) return;
+    waiting = false;
+
+    if (kill && gameRunning === false){
+        worker.postMessage({type: 'quit'});
+        kill = false;
+
+        if (startAgain) {
+            start();
+            startAgain = false;
+        }
+
+        return;
+    }
+
+    if (gameOver || gameRunning === false) return;
     if (e.data.value === 0) return;
     if (e.data.type !== 'suggestion') return;
 
-    const move = e.data.move;
-    const spin = e.data.spin;
+    const move = e.data.move.location;
+    const spin = e.data.move.spin;
 
-    if (spin !== 1) cobra.state.tspinCheck.rotated = true;
+    if (move.piece === cobra.state.heldPiece) cobra.hold();
 
-    if (move.location.piece === cobra.state.heldPiece) cobra.hold();
-
-    cobra.state.movePiece(move.location);
+    cobra.movePiece(move);
+    cobra.place();
+    cobra.clearLines(spin);
 
     if (!cobra.state.isValid(cobra.state.activePiece)){
         console.warn("Illegal move");
+        cobra.state.gameOver();
+        drawBoard(cobra);
         gameRunning = false;
         gameOver = true;
     }
 
-    let queue = cobra.hardDrop();
-    // console.log(queue);
-
     let t = performance.now() - startTime;
-    let duration = ((cobra.state.pieceCount + 1) / targetPPS * 1000) - t;
+    let duration = ((cobra.pieceCount + 1) / targetPPS * 1000) - t;
 
-    setTimeout(() => { // PPS limiter
-        if (queue !== ""){
-            worker.postMessage({type: 'newpiece', piece: queue});
-        }
+    setTimeout(() => {
         worker.postMessage({type: 'suggest', depth: playingDepth});
-    }, duration);
+        waiting = true;
+    }, duration)
 }

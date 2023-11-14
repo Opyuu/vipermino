@@ -1,32 +1,6 @@
 let pieceTable = []; // [Piece][Rotation][Mino #] of Coord class
 
-class Coord {
-    constructor(x, y){
-        this.x = x;
-        this.y = y;
-    }
-}
 
-class PRNG {
-    s = 0;
-    old = 0;
-    constructor(seed) {
-        this.s = seed;
-    }
-
-    rand(){
-        this.old = this.s;
-        this.s ^= (this.s >> 12);
-        this.s ^= (this.s << 25);
-        this.s ^= (this.s >> 27);
-        return this.s * 2685821657736338717;
-    }
-
-    undo(){
-        this.s = this.old;
-        this.old = 0;
-    }
-}
 
 
 function cells(piece){ // Returns an array of cell location: [mino][x/y]

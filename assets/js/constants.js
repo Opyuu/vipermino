@@ -46,7 +46,7 @@ let baseShadowTexture = PIXI.Texture.from('../assets/sprites/shadowsprites.png')
 let basePieceTexture = PIXI.Texture.from('../assets/sprites/piecesprite.png')
 
 for(let i = 0; i < 8; i++){
-    const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
+    const show = new PIXI.Rectangle(i * 32, 0, 32, 32);
     let texture = new PIXI.Texture(baseShadowTexture, show);
     SHADOW_TEXTURE.push(texture);
 }
@@ -55,4 +55,25 @@ for(let i = 0; i <= 8; i++){
     const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
     let texture = new PIXI.Texture(basePieceTexture, show);
     PIECE_TEXTURE.push(texture);
+}
+
+const tetrioAttackTable = {
+    SINGLE: 0,
+    DOUBLE: 1,
+    TRIPLE: 2,
+    QUAD: 4,
+    TSPIN_MINI: 0,
+    TSPIN: 0,
+    TSPIN_MINI_SINGLE: 0,
+    TSPIN_SINGLE: 2,
+    TSPIN_MINI_DOUBLE: 1,
+    TSPIN_DOUBLE: 4,
+    TSPIN_TRIPLE: 6,
+    TSPIN_QUAD: 10,
+    BACKTOBACK_BONUS: 1,
+    BACKTOBACK_BONUS_LOG: 0.8,
+    COMBO_MINIFIER: 1,
+    COMBO_MINIFIER_LOG: 1.25,
+    COMBO_BONUS: 0.25,
+    ALL_CLEAR: 10,
 }
