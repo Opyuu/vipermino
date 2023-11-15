@@ -70,6 +70,7 @@ function play(){
     init();
     queueToBoard();
     parseFumen(fumen, game.state.board);
+    drawBoard(game);
     playingDepth = depth;
     targetPPS = ppsLimit;
 

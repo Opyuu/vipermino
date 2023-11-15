@@ -125,6 +125,25 @@ class Player{
         return false;
     }
 
+    rotate180(){
+        if (this.gameOver) return;
+
+        let currentPiece = this.state.activePiece;
+        if (currentPiece.type === piece_T.O) return;
+
+        let kickCoords = KICKS_180[+(currentPiece.type === piece_T.I)][currentPiece.rotation];
+        currentPiece.rotation = (currentPiece.rotation + 2) % 4;
+
+        if (this.testRotate(kickCoords)){
+            drawActive(this);
+            return true;
+        }
+
+        currentPiece.rotation = (currentPiece.rotation + 2) % 4;
+        drawActive(this);
+        return false;
+    }
+
     hold(){
         if (!this.canHold) return;
 
