@@ -92,3 +92,20 @@ function drawGarbage(g){
     g.state.drawGarbage(g.garbageGraphics);
     g.app.stage.addChild(g.garbageGraphics);
 }
+
+function drawStats(g, timeElapsed){
+    let pps = g.state.stats.pieceCount / timeElapsed * 1000;
+    let apm = g.state.stats.attack / timeElapsed * 1000 * 60;
+    let vs = (g.state.stats.attack + g.state.stats.garbageCleared) / g.state.stats.pieceCount * pps * 100;
+
+    vs = isNaN(vs) ? 0 : vs;
+
+    g.app.stage.removeChild(g.statsText);
+    g.statsText = new PIXI.Text(
+        `${g.state.stats.pieceCount} | ${pps.toFixed(2)} PPS
+${g.state.stats.attack} | ${apm.toFixed(2)} APM
+${vs.toFixed(2)} VS`, {font:"50px Monospace", fill:"white"});
+    g.statsText.x = 17.5 * BLOCK_SIZE;
+    g.statsText.y = 20.5 * BLOCK_SIZE;
+    g.app.stage.addChild(g.statsText);
+}

@@ -257,6 +257,9 @@ function gameLoop(){
         return;
     }
 
+    drawStats(game, t1 - startTime);
+    drawStats(cobra, t1 - startTime);
+
     while(game.state.outgoingGarbage.length > 0){
         let g = game.state.outgoingGarbage.shift();
         cobra.garbageIn(g);

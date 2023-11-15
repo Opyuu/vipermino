@@ -84,6 +84,8 @@ class GameState{
     bagSeedPRNG;
     garbageSeedPRNG;
 
+    stats = new Statistics();
+
     constructor(bagSeed, garbageSeed){
         this.bagSeedPRNG = new PRNG(bagSeed);
         this.garbageSeedPRNG = new PRNG(garbageSeed);
@@ -140,9 +142,13 @@ class GameState{
     }
 
     clearLine(line){
+        let garbCount = 0;
         for (let col = 0; col < 10; col++){
+            if (this.board[col][line].type === piece_T.GARBAGE) garbCount++;
             this.board[col][line] = new MinoInfo(piece_T.NO_PIECE, rotation_T.NORTH, 0);
         }
+
+        if (garbCount === 9) this.stats.garbageCleared++;
 
         for (let row = line + 1; row < 40; row++){
             for (let col = 0; col < 10; col++){
@@ -315,6 +321,7 @@ class GameState{
     }
 
     sendGarbage(lines){
+        this.stats.attack += lines;
         if (lines === 0) return;
 
         if (this.garbageQueue.length === 0){

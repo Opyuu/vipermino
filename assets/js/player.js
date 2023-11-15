@@ -18,6 +18,7 @@ class Player{
         this.queueGraphics = new PIXI.Graphics();
         this.holdGraphics = new PIXI.Graphics();
         this.garbageGraphics = new PIXI.Graphics();
+        this.statsText = new PIXI.Text();
     }
 
     moveLeft(){
@@ -151,6 +152,7 @@ class Player{
         if (this.state.isValid(this.state.activePiece)) {
             this.canHold = true;
             this.pieceCount++;
+            this.state.stats.pieceCount++;
             if (this.pieceCount % 7 === 0) {
                 this.state.sevenBag();
             }
@@ -209,5 +211,7 @@ class Player{
         this.app.stage.removeChild(this.queueGraphics);
         this.app.stage.removeChild(this.holdGraphics);
         this.app.stage.removeChild(this.garbageGraphics);
+        this.app.stage.removeChild(this.statsText);
+
     }
 }

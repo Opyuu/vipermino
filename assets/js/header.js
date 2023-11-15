@@ -76,3 +76,12 @@ class TspinInfo{
         this.kickFive = false;
     }
 }
+
+
+class Statistics{
+    constructor() {
+        this.attack = 0;
+        this.pieceCount = 0;
+        this.garbageCleared = 0;
+    }
+}

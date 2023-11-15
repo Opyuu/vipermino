@@ -12,6 +12,17 @@ class Bot{
         this.queueGraphics = new PIXI.Graphics();
         this.holdGraphics = new PIXI.Graphics();
         this.garbageGraphics = new PIXI.Graphics();
+        this.statsText = new PIXI.Text();
+    }
+
+    clearQueue(){
+        this.state.queue = [];
+    }
+
+    drawShadow(move){
+        //
+        // let x = move.x;
+
     }
 
     garbageIn(lines){
@@ -36,6 +47,7 @@ class Bot{
 
     place(){
         this.pieceCount++;
+        this.state.stats.pieceCount++;
         this.state.placePiece(this.state.activePiece);
 
         if (this.pieceCount % 7 === 0){
@@ -115,5 +127,6 @@ class Bot{
         this.app.stage.removeChild(this.queueGraphics);
         this.app.stage.removeChild(this.holdGraphics);
         this.app.stage.removeChild(this.garbageGraphics);
+        this.app.stage.removeChild(this.statsText);
     }
 }

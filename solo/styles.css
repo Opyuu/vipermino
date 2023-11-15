@@ -112,3 +112,14 @@ body{
     background: #04AA6D; /* Green background */
     cursor: pointer; /* Cursor on hover */
   }
+
+  #wait{
+      display: none;
+      background-color: white;
+      font-size: 100px;
+      position: absolute;
+      left: 20vh;
+      top: 20vh;
+      text-align: center;
+      z-index: 2;
+  }
