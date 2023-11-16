@@ -118,6 +118,8 @@ function stopGame(){
 worker.onmessage = (e) => {
     waiting = false;
 
+    console.log(e.data);
+
 
     if (quit) {
         worker.postMessage({type: 'quit'});
@@ -134,14 +136,14 @@ worker.onmessage = (e) => {
     if (e.data.value === 0) return;
     if (e.data.type !== 'suggestion') return;
 
-
+    game.drawPV(e.data.pv);
 
     const move = e.data.move.location;
     const spin = e.data.move.spin;
 
     if (move.piece === game.state.heldPiece) game.hold();
 
-    game.movePiece(move);
+    game.movePiece(move, spin);
 
     let t = performance.now() - startTime;
     let duration = ((game.pieceCount + 1) / targetPPS * 1000) - t;
@@ -151,7 +153,7 @@ worker.onmessage = (e) => {
         waiting = true;
         if (!gameRunning) return;
         game.place();
-        game.clearLines(spin);
+        game.clearLines();
 
     }, duration)
 }

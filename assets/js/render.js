@@ -1,7 +1,7 @@
-function drawActive(g){
+function drawActive(g, s=true){
     g.app.stage.removeChild(g.activeGraphics);
     g.activeGraphics.clear();
-    g.state.drawShadow(g.activeGraphics);
+    if (s) g.state.drawShadow(g.activeGraphics);
     g.state.drawActive(g.activeGraphics);
     g.app.stage.addChild(g.activeGraphics);
 

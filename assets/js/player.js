@@ -21,6 +21,47 @@ class Player{
         this.statsText = new PIXI.Text();
     }
 
+    wooshLeft(){
+        if (this.gameOver) return;
+
+        let initial = this.state.activePiece.x;
+        while (this.state.isValid(this.state.activePiece)) {this.state.activePiece.x--;}
+        this.state.activePiece.x++;
+
+        if (initial !== this.state.activePiece.x) this.tspinCheck.rotated = false;
+
+        drawActive(this);
+    }
+
+    wooshRight(){
+        if (this.gameOver) return;
+
+        let initial = this.state.activePiece.x;
+        while (this.state.isValid(this.state.activePiece)) {this.state.activePiece.x++;}
+        this.state.activePiece.x--;
+
+        if (initial !== this.state.activePiece.x) this.tspinCheck.rotated = false;
+
+        drawActive(this);
+    }
+
+    wooshDown(){
+        if (this.gameOver) return;
+
+        let initial = this.state.activePiece.y;
+        while (this.state.isValid(this.state.activePiece)) { this.state.activePiece.y--;}
+
+        this.state.activePiece.y++;
+
+        if ( (initial) !== this.state.activePiece.y){
+            playerSounds["softDrop"].play();
+            this.tspinCheck.rotated = false;
+        }
+
+
+        drawActive(this);
+    }
+
     moveLeft(){
         if (this.gameOver) return;
 
@@ -28,8 +69,11 @@ class Player{
 
         if (!this.state.isValid(this.state.activePiece)){
             this.state.activePiece.x++;
+
+            return;
         }
 
+        playerSounds["move"].play();
         this.tspinCheck.rotated = false;
 
         drawActive(this);
@@ -42,8 +86,10 @@ class Player{
 
         if (!this.state.isValid(this.state.activePiece)){
             this.state.activePiece.x--;
+            return;
         }
 
+        playerSounds["move"].play();
         this.tspinCheck.rotated = false;
 
         drawActive(this);
@@ -56,6 +102,8 @@ class Player{
 
         if (!this.state.isValid(this.state.activePiece)){
             this.state.activePiece.y++;
+            // playerSounds["softDrop"].play();
+
             return false;
         }
 
@@ -91,12 +139,18 @@ class Player{
         if (this.gameOver) return;
 
         let currentPiece = this.state.activePiece;
-        if (currentPiece.type === piece_T.O) return;
+        if (currentPiece.type === piece_T.O) {
+            playerSounds["rotate"].play();
+            return;
+        }
 
         let kickCoords = CW_KICKS[+(currentPiece.type === piece_T.I)][currentPiece.rotation];
         currentPiece.rotation = (currentPiece.rotation + 1) % 4;
 
         if (this.testRotate(kickCoords)) {
+            if (this.state.checkTspin(this.tspinCheck) !== tspin_T.NONE) playerSounds["spin"].play();
+
+            playerSounds["rotate"].play();
             drawActive(this);
             return true;
         }
@@ -110,12 +164,19 @@ class Player{
         if (this.gameOver) return;
 
         let currentPiece = this.state.activePiece;
-        if (currentPiece.type === piece_T.O) return;
+        if (currentPiece.type === piece_T.O) {
+
+            playerSounds["rotate"].play();
+            return;
+        }
 
         let kickCoords = CCW_KICKS[+(currentPiece.type === piece_T.I)][currentPiece.rotation];
         currentPiece.rotation = (currentPiece.rotation + 3) % 4;
 
         if (this.testRotate(kickCoords)) {
+            if (this.state.checkTspin(this.tspinCheck) !== tspin_T.NONE) playerSounds["spin"].play();
+
+            playerSounds["rotate"].play();
             drawActive(this);
             return true;
         }
@@ -129,12 +190,18 @@ class Player{
         if (this.gameOver) return;
 
         let currentPiece = this.state.activePiece;
-        if (currentPiece.type === piece_T.O) return;
+        if (currentPiece.type === piece_T.O) {
+            playerSounds["rotate"].play();
+            return;
+        }
 
         let kickCoords = KICKS_180[+(currentPiece.type === piece_T.I)][currentPiece.rotation];
         currentPiece.rotation = (currentPiece.rotation + 2) % 4;
 
         if (this.testRotate(kickCoords)){
+            if (this.state.checkTspin(this.tspinCheck) !== tspin_T.NONE) playerSounds["spin"].play();
+
+            playerSounds["rotate"].play();
             drawActive(this);
             return true;
         }
@@ -149,6 +216,7 @@ class Player{
 
         if (this.gameOver) return;
 
+        playerSounds["hold"].play();
         this.state.hold();
         this.canHold = false;
 
@@ -161,10 +229,13 @@ class Player{
         while(this.moveDown()){}
         this.state.placePiece(this.state.activePiece);
 
+
         if (!this.state.clearLines(this.tspinCheck)) {
-            this.state.tankGarbage();
+            (this.state.tankGarbage());
         }
+
         this.state.spawnPiece();
+        playerSounds["hardDrop"].play();
 
         drawGarbage(this);
 
@@ -190,6 +261,8 @@ class Player{
             this.gameOver = true;
 
             this.state.activePiece.type = temp;
+
+            playerSounds["topout"].play();
         }
     }
 

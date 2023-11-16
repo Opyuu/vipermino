@@ -1,5 +1,66 @@
+class TestPV{
+    clearedRows = [];
+
+    constructor(board) {
+        this.testBoard = [];
+
+        for (let row = 0; row < 10; row++){
+            this.testBoard[row] = [];
+
+            for (let col = 0; col < 40; col++){
+                this.testBoard[row][col] = board[row][col].type;
+            }
+        }
+    }
+    clearRow(line){
+        for (let row = line + 1; row < 40; row++){
+            for (let col = 0; col < 10; col++){
+                this.testBoard[col][row - 1] = this.testBoard[col][row];
+            }
+        }
+
+        for (let col = 0; col < 10; col++){
+            this.testBoard[col][39] = 0;
+        }
+    }
+
+    clearLines(){
+        for (let row = 0; row < 40; row++){
+            let clear = 1;
+
+            for (let col = 0; col < 10; col++){
+                clear *= this.testBoard[col][row];
+            }
+
+            if (clear) {
+                this.clearRow(row);
+                this.clearedRows.push(row);
+                row--;
+            }
+        }
+    }
+
+    playMove(move){
+        let piece = move.piece;
+        let x = move.x;
+        let y = move.y;
+        let rot = move.rotation;
+
+        let pc = pieceTable[piece][rot];
+
+        for (let mino = 0; mino < 4; mino++){
+            let xpos = x + pc[mino].x;
+            let ypos = y + pc[mino].y;
+            this.testBoard[xpos][ypos] = piece;
+        }
+
+        this.clearLines();
+    }
+}
+
 class Bot{
     pieceCount = 0;
+    tspinInfo = new TspinInfo();
 
     constructor(app, queueSeed, garbSeed, worker) {
         this.worker = worker;
@@ -12,17 +73,8 @@ class Bot{
         this.queueGraphics = new PIXI.Graphics();
         this.holdGraphics = new PIXI.Graphics();
         this.garbageGraphics = new PIXI.Graphics();
+        this.pvGraphics = new PIXI.Graphics();
         this.statsText = new PIXI.Text();
-    }
-
-    clearQueue(){
-        this.state.queue = [];
-    }
-
-    drawShadow(move){
-        //
-        // let x = move.x;
-
     }
 
     garbageIn(lines){
@@ -32,17 +84,27 @@ class Bot{
 
     hold(){
         this.state.hold();
+        playerSounds["hold"].play()
         drawHold(this);
         drawQueue(this);
     }
 
-    movePiece(move){
+    movePiece(move, spin){
         this.state.activePiece.x = move.x;
         this.state.activePiece.y = move.y;
         this.state.activePiece.rotation = move.rotation;
 
+        if (spin !== 0) {
+            this.tspinInfo.rotated = true;
+            if (spin === 1) this.tspinInfo.kickFive = true;
+            playerSounds["spin"].play();
+        } else{
+            this.tspinInfo.rotated = false;
+            this.tspinInfo.kickFive = false;
+        }
 
-        drawActive(this);
+
+        drawActive(this, false);
     }
 
     place(){
@@ -56,27 +118,64 @@ class Bot{
             this.worker.postMessage({type: 'newpiece', piece: q});
         }
 
+        playerSounds["hardDrop"].play();
         drawBoard(this);
-        drawActive(this);
+        drawActive(this, false);
     }
 
-    clearLines(spin){
-        const info = new TspinInfo();
+    drawPV(pv){
+        this.app.stage.removeChild(this.pvGraphics);
+        this.pvGraphics.clear();
 
-        info.rotated = spin === 1;
+        let testObj = new TestPV(this.state.board);
 
-        if (!this.state.clearLines(info)){
-            this.state.tankGarbage(true);
-            drawGarbage(this);
+
+        for (let move of pv){
+            let piece = move.piece;
+            let x = move.x;
+            let y = move.y;
+            let rot = move.rotation;
+            // Draw shadow
+
+            let pc = pieceTable[piece][rot];
+
+            for (let mino = 0; mino < 4; mino++){
+                let xpos = x + pc[mino].x;
+                let ypos = y + pc[mino].y;
+
+                testObj.clearedRows.findLast(r => {
+                    if (ypos >= r) ypos++
+                });
+
+                ypos = RENDER_ROWS - ypos - 1;
+
+                const transformationMatrix = new PIXI.Matrix();
+                transformationMatrix.scale(1 / BLOCK_SIZE, 1/BLOCK_SIZE);
+                transformationMatrix.rotate( (Math.PI / 2) * rot);
+
+                this.pvGraphics.beginTextureFill({
+                    texture: PV_TEXTURE[piece][mino],
+                    matrix: transformationMatrix
+                });
+                this.pvGraphics.drawRect(xpos, ypos, 1, 1);
+                this.pvGraphics.endFill();
+            }
+            testObj.playMove(move);
         }
 
+        this.app.stage.addChild(this.pvGraphics);
+    }
+
+    clearLines(){
+        if (!this.state.clearLines(this.tspinInfo)) this.state.tankGarbage(true);
         this.state.spawnPiece(); // Spawn always happens after clear
+        drawGarbage(this);
+
 
         if (!this.state.isValid(this.state.activePiece)){
             let temp = this.state.activePiece.type;
             this.state.activePiece.type = piece_T.NO_PIECE;
-            drawActive(this);
-            drawGarbage(this);
+            drawActive(this, false);
 
             this.state.gameOver();
             drawBoard(this);
@@ -84,7 +183,7 @@ class Bot{
         } else {
             drawBoard(this);
             drawQueue(this);
-            drawActive(this);
+            drawActive(this, false);
         }
     }
 
@@ -111,6 +210,8 @@ class Bot{
 
         this.garbageGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
         this.garbageGraphics.position.set(6 * BLOCK_SIZE, 0);
+        this.pvGraphics.scale.set(BLOCK_SIZE, BLOCK_SIZE);
+        this.pvGraphics.position.set(7 * BLOCK_SIZE, 0);
     }
 
     destroy(){
@@ -120,6 +221,7 @@ class Bot{
         this.queueGraphics.clear();
         this.holdGraphics.clear();
         this.garbageGraphics.clear();
+        this.pvGraphics.clear();
 
         this.app.stage.removeChild(this.boardGraphics);
         this.app.stage.removeChild(this.borderGraphics);
@@ -128,5 +230,6 @@ class Bot{
         this.app.stage.removeChild(this.holdGraphics);
         this.app.stage.removeChild(this.garbageGraphics);
         this.app.stage.removeChild(this.statsText);
+        this.app.stage.removeChild(this.pvGraphics);
     }
 }

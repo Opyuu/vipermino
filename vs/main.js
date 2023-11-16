@@ -260,20 +260,47 @@ function gameLoop(){
     drawStats(game, t1 - startTime);
     drawStats(cobra, t1 - startTime);
 
+    let totalOut = 0;
+    let totalIn = 0;
+
     while(game.state.outgoingGarbage.length > 0){
         let g = game.state.outgoingGarbage.shift();
         cobra.garbageIn(g);
+
+        totalOut += g;
     }
 
     while (cobra.state.outgoingGarbage.length > 0){
         let g = cobra.state.outgoingGarbage.shift();
         game.garbageIn(g);
+
+        totalIn += g;
     }
 
     if (!game.state.isValid(game.state.activePiece)) {
         console.warn("Game over");
         gameRunning = false;
         gameOver = true;
+        totalIn = totalOut = 0;
+    }
+
+    // Sound logic
+
+    if (totalOut > 6){
+        playerSounds["garbage_out_large"].play();
+    } else if (totalOut > 3){
+        playerSounds["garbage_out_medium"].play();
+    } else if (totalOut > 0){
+        playerSounds["garbage_out_small"].play();
+    }
+
+
+    if (totalIn > 6){
+        playerSounds["garbage_in_large"].play();
+    } else if (totalIn > 3){
+        playerSounds["garbage_in_medium"].play();
+    } else if (totalIn > 0){
+        playerSounds["garbage_in_small"].play();
     }
 
     const t2 = performance.now();
@@ -293,11 +320,20 @@ function das(dir, id){
     }, controls["DAS"]);
 }
 
+
 function arr(dir, id){
-    let loop = setInterval(() => {
-        if (dasID === id) move(dir);
-        else clearInterval(loop);
-    }, controls["ARR"]);
+    if (controls["ARR"] === "0"){
+        let loop = setInterval(() => {
+            if (dasID === id) move0arr(dir);
+            else clearInterval(loop);
+        }, 1000/60);
+
+    } else {
+        let loop = setInterval(() => {
+            if (dasID === id) move(dir);
+            else clearInterval(loop);
+        }, controls["ARR"]);
+    }
 
 }
 
@@ -306,10 +342,15 @@ function move(dir){
     else if (dir === "R") game.moveRight();
 }
 
+function move0arr(dir){
+    if (dir === "L") game.wooshLeft();
+    else if (dir === "R") game.wooshRight();
+}
+
 function sd(id){
     if (controls["SDARR"] === "0"){
         let loop = setInterval(() => {
-            if (sdID === id) while (game.moveDown()){}
+            if (sdID === id) game.wooshDown();
             else clearInterval(loop);
         }, 1000/60);
 
@@ -364,22 +405,25 @@ worker.onmessage = (e) => {
 
     if (move.piece === cobra.state.heldPiece) cobra.hold();
 
-    cobra.movePiece(move);
+    cobra.movePiece(move, spin);
+    cobra.drawPV(e.data.pv);
     cobra.place();
-    cobra.clearLines(spin);
 
-    if (!cobra.state.isValid(cobra.state.activePiece)){
-        console.warn("Illegal move");
-        cobra.state.gameOver();
-        drawBoard(cobra);
-        gameRunning = false;
-        gameOver = true;
-    }
 
     let t = performance.now() - startTime;
     let duration = ((cobra.pieceCount + 1) / targetPPS * 1000) - t;
 
     setTimeout(() => {
+        cobra.clearLines();
+        if (!cobra.state.isValid(cobra.state.activePiece)){
+            console.warn("Illegal move");
+            cobra.state.gameOver();
+            drawBoard(cobra);
+            gameRunning = false;
+            gameOver = true;
+            playerSounds["topout"].play();
+        }
+
         worker.postMessage({type: 'suggest', depth: playingDepth});
         waiting = true;
     }, duration)

@@ -77,6 +77,7 @@ class GameState{
     queue = [];
     garbageQueue = [];
     outgoingGarbage = [];
+    pow = false;
 
     heldPiece = piece_T.NO_PIECE;
     activePiece;
@@ -161,10 +162,7 @@ class GameState{
         }
     }
 
-    clearLines(tspinInfo){
-        let clear = false;
-        let lineCount = 0;
-
+    checkTspin(tspinInfo){
         let tspin = tspin_T.NONE;
         if (this.activePiece.type === piece_T.T && tspinInfo.rotated === true){
             let out = 0; // Out facing corners, 3 corner rule
@@ -190,12 +188,21 @@ class GameState{
                 } else{
                     tspin = tspin_T.MINI;
                 }
-            }
 
-            if (tspinInfo.kickFive === true){
-                tspin = tspin_T.FULL;
+                if (tspinInfo.kickFive === true){
+                    tspin = tspin_T.FULL;
+                }
             }
         }
+
+        return tspin;
+    }
+
+    clearLines(tspinInfo){
+        let clear = false;
+        let lineCount = 0;
+
+        let tspin = this.checkTspin(tspinInfo);
 
         for (let row = 0; row < 40; row++){
             let line = true;
@@ -212,39 +219,51 @@ class GameState{
             }
         }
 
-        if (lineCount === 0) {
-            this.combo = -1;  // Reset combo
-        } else{
-            this.combo++;
-        }
-
         if ((tspin === tspin_T.FULL && clear) || (tspin === tspin.MINI && clear) || lineCount === 4) {
             this.b2b++;
         }
         else if (clear){
+            if (this.b2b > 2) playerSounds["b2bbreak"].play();
+
             this.b2b = -1;
         }
 
-        let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b);
+        if (lineCount === 0) {
+            if (this.combo > 1){
+                playerSounds[`combobreak`].play();
+            }
 
+            this.pow = false;
+            this.combo = -1;  // Reset combo
+
+        } else{
+            this.combo++;
+            if (this.combo > 0) {
+                let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b);
+
+                if (lines > 5) {
+                    this.pow = true;
+                }
+                playerSounds[`${this.combo > 16 ? 16 : this.combo}combo${this.pow === true ? "_power" : ""}`].play();
+            }
+
+            if (tspin !== tspin_T.NONE) playerSounds["clearSpin"].play();
+            else if (this.b2b > 0) playerSounds["clearb2b"].play();
+            else if (lineCount === 4) playerSounds["clearQuad"].play();
+            else playerSounds["0combo"].play();
+        }
+
+        let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b);
         this.sendGarbage(lines);
 
-        if (this.isEmpty()) this.sendGarbage(10);
+        if (this.isEmpty()) {
+            this.sendGarbage(10);
+            playerSounds["allClear"].play();
+        }
 
         return clear;
     }
 
-    printBoard(){
-        for (let row = 39; row >= 0; row--){
-            let line = "";
-            for (let col = 0; col < 10; col++){
-                line += this.board[col][row].type + " ";
-            }
-
-            console.log(line);
-            console.log("\n");
-        }
-    }
 
     hold(){
         if (this.heldPiece === piece_T.NO_PIECE){
@@ -313,6 +332,11 @@ class GameState{
             this.spawnGarbage(i, bot);
         }
 
+        if (total > 0){
+            // play tank
+            playerSounds["garbageRise"].play();
+        }
+
         if (undo) this.garbageSeedPRNG.undo();
     }
 
@@ -331,6 +355,7 @@ class GameState{
                 let temp = this.garbageQueue[i];
                 this.garbageQueue[i] -= lines;
                 lines -= temp;
+                if (lines <= 0) break;
             }
 
             for (let i = 0; i < this.garbageQueue.length; i++){
@@ -522,6 +547,18 @@ class GameState{
             })
             graphics.drawRect(x, y, 1, 1);
             graphics.endFill();
+        }
+    }
+
+    printBoard(){
+        for (let row = 39; row >= 0; row--){
+            let line = "";
+            for (let col = 0; col < 10; col++){
+                line += this.board[col][row].type + " ";
+            }
+
+            console.log(line);
+            console.log("\n");
         }
     }
 }

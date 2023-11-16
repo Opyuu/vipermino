@@ -22,6 +22,7 @@ const FUMEN_PIECE = [0, 1, 4, 2, 7, 3, 5, 6, 8];
 const GRID_COLOUR = 0x001e82;
 const BORDER_COLOUR = 0xFFFFFF;
 const SHADOW_TEXTURE = [];
+const PV_TEXTURE = [];
 const PIECE_TEXTURE = [];
 const ENCODE_TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -55,6 +56,15 @@ for(let i = 0; i <= 8; i++){
     const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
     let texture = new PIXI.Texture(basePieceTexture, show);
     PIECE_TEXTURE.push(texture);
+}
+
+for (let i = 0; i < 8; i++){
+    const baseTexture = PIXI.Texture.from('/assets/sprites/connectedshadow.png');
+    PV_TEXTURE[i + 1] = [];
+    for (let mino = 0; mino < 4; mino++){
+        const show = new PIXI.Rectangle(i * BLOCK_SIZE, mino * BLOCK_SIZE, 32, 32);
+        PV_TEXTURE[i + 1][mino] = new PIXI.Texture(baseTexture, show);
+    }
 }
 
 const tetrioAttackTable = {
