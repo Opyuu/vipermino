@@ -32,7 +32,7 @@ for(let piece = 0; piece < 8; piece++){
     const baseConnectedTexture = PIXI.Texture.from('/vipermino/assets/sprites/connected.png')
     CONNECTED_TEXTURES[piece + 1] = [];
     for (let mino = 0; mino < 4; mino++){
-        const show = new PIXI.Rectangle(piece * BLOCK_SIZE, mino * BLOCK_SIZE, 32, 32);
+        const show = new PIXI.Rectangle(piece * 32, mino * 32, 32, 32);
         CONNECTED_TEXTURES[piece + 1][mino] = new PIXI.Texture(baseConnectedTexture, show);
     }
 }
@@ -53,7 +53,7 @@ for(let i = 0; i < 8; i++){
 }
 
 for(let i = 0; i <= 8; i++){
-    const show = new PIXI.Rectangle(i * BLOCK_SIZE, 0, 32, 32);
+    const show = new PIXI.Rectangle(i * 32, 0, 32, 32);
     let texture = new PIXI.Texture(basePieceTexture, show);
     PIECE_TEXTURE.push(texture);
 }
@@ -62,7 +62,7 @@ for (let i = 0; i < 8; i++){
     const baseTexture = PIXI.Texture.from('/vipermino/assets/sprites/connectedshadow.png');
     PV_TEXTURE[i + 1] = [];
     for (let mino = 0; mino < 4; mino++){
-        const show = new PIXI.Rectangle(i * BLOCK_SIZE, mino * BLOCK_SIZE, 32, 32);
+        const show = new PIXI.Rectangle(i * 32, mino * 32, 32, 32);
         PV_TEXTURE[i + 1][mino] = new PIXI.Texture(baseTexture, show);
     }
 }

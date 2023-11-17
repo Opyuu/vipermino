@@ -130,6 +130,7 @@ class GameState{
     }
 
     isValid(piece){ // Checks validity of a piece in a particular location
+        if (piece.type === piece_T.NO_PIECE) return false;
         let pc = pieceTable[piece.type][piece.rotation];
 
         for (let mino = 0; mino < 4; mino++){

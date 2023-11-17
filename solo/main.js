@@ -115,11 +115,17 @@ function stopGame(){
     game = new Bot(app, seed, seed, worker);
 }
 
+// let loop = setInterval(() =>{
+//     if (!gameRunning) return;
+//     game.garbageIn(5);
+//     playerSounds["garbage_in_medium"].play();
+// },1000);
+
 worker.onmessage = (e) => {
     waiting = false;
 
-    console.log(e.data);
-
+    document.getElementById("Score").innerHTML = "Score: " + e.data.score;
+    document.getElementById("Reward").innerHTML = "Reward: " + e.data.reward;
 
     if (quit) {
         worker.postMessage({type: 'quit'});
@@ -128,7 +134,6 @@ worker.onmessage = (e) => {
             play();
             startAgain = false;
         }
-
         return;
     }
 
@@ -141,19 +146,19 @@ worker.onmessage = (e) => {
     const move = e.data.move.location;
     const spin = e.data.move.spin;
 
-    if (move.piece === game.state.heldPiece) game.hold();
-
-    game.movePiece(move, spin);
-
     let t = performance.now() - startTime;
     let duration = ((game.pieceCount + 1) / targetPPS * 1000) - t;
 
     setTimeout(() => {
-        worker.postMessage({type: 'suggest', depth: playingDepth});
-        waiting = true;
         if (!gameRunning) return;
+        if (move.piece === game.state.heldPiece) game.hold();
+
+        game.movePiece(move, spin);
         game.place();
         game.clearLines();
+        game.drawPV(e.data.pv.slice(1));
 
+        worker.postMessage({type: 'suggest', depth: playingDepth});
+        waiting = true;
     }, duration)
 }

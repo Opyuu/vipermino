@@ -397,23 +397,25 @@ worker.onmessage = (e) => {
     }
 
     if (gameOver || gameRunning === false) return;
-    if (e.data.value === 0) return;
+    if (e.data.type === "gameover") {
+        cobra.state.activePiece.type = piece_T.NO_PIECE;
+    }
     if (e.data.type !== 'suggestion') return;
 
     const move = e.data.move.location;
     const spin = e.data.move.spin;
 
-    if (move.piece === cobra.state.heldPiece) cobra.hold();
-
-    cobra.movePiece(move, spin);
     cobra.drawPV(e.data.pv);
-    cobra.place();
-
 
     let t = performance.now() - startTime;
     let duration = ((cobra.pieceCount + 1) / targetPPS * 1000) - t;
 
     setTimeout(() => {
+        if (!gameRunning) return;
+
+        if (move.piece === cobra.state.heldPiece) cobra.hold();
+        cobra.movePiece(move, spin);
+        cobra.place();
         cobra.clearLines();
         if (!cobra.state.isValid(cobra.state.activePiece)){
             console.warn("Illegal move");
@@ -423,6 +425,7 @@ worker.onmessage = (e) => {
             gameOver = true;
             playerSounds["topout"].play();
         }
+        cobra.drawPV(e.data.pv.slice(1));
 
         worker.postMessage({type: 'suggest', depth: playingDepth});
         waiting = true;
