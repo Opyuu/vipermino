@@ -235,7 +235,7 @@ function start(){
     targetPPS = ppsLimit;
     playingDepth = depth;
 
-    worker.postMessage({type: 'suggest', depth: playingDepth, garbage: 0});
+    worker.postMessage({type: 'suggest', depth: playingDepth});
     startTime = performance.now();
 
     document.addEventListener('keyup', handleKeyUp);
