@@ -168,7 +168,7 @@ function restart(event){
         } else{
             console.warn("resetting");
 
-            restart();
+            reset();
 
             startAgain = true;
         }
@@ -235,7 +235,7 @@ function start(){
     targetPPS = ppsLimit;
     playingDepth = depth;
 
-    worker.postMessage({type: 'suggest', depth: playingDepth});
+    worker.postMessage({type: 'suggest', depth: playingDepth, garbage: 0});
     startTime = performance.now();
 
     document.addEventListener('keyup', handleKeyUp);
@@ -427,7 +427,10 @@ worker.onmessage = (e) => {
         }
         cobra.drawPV(e.data.pv.slice(1));
 
-        worker.postMessage({type: 'suggest', depth: playingDepth});
+        let sum = cobra.state.garbageQueue.reduce((temp, a) => temp + a, 0);
+        console.log("Garbage sum:", sum);
+
+        worker.postMessage({type: 'suggest', depth: playingDepth, garbage: sum});
         waiting = true;
     }, duration)
 }

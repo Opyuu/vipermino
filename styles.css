@@ -53,5 +53,6 @@ a:hover{
 
 #mainbody{
     position: inherit;
+    margin-left: 10%;
     top: 50%;
 }
