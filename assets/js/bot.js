@@ -129,6 +129,9 @@ class Bot{
 
         let testObj = new TestPV(this.state.board);
 
+        let pieceCount = 0;
+        let currentAlpha = 1;
+        // let alphaChange = 0.8/pv.length;
 
         for (let move of pv){
             let piece = move.piece;
@@ -155,12 +158,16 @@ class Bot{
 
                 this.pvGraphics.beginTextureFill({
                     texture: PV_TEXTURE[piece][mino],
-                    matrix: transformationMatrix
+                    matrix: transformationMatrix,
+                    alpha: currentAlpha
                 });
                 this.pvGraphics.drawRect(xpos, ypos, 1, 1);
                 this.pvGraphics.endFill();
             }
             testObj.playMove(move);
+            if (pieceCount === 3) currentAlpha = 0.4;
+            // currentAlpha -= alphaChange;
+            pieceCount++;
         }
 
         this.app.stage.addChild(this.pvGraphics);

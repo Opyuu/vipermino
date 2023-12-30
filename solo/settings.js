@@ -1,3 +1,6 @@
+const volumeSlider = document.getElementById("Volume");
+
+
 
 function toggleSetting(){
     if (!showSetting){
@@ -16,6 +19,13 @@ function toggleSetting(){
 
 queueInput.oninput = function(){
     this.value = this.value.toUpperCase(); // Force upper case for input of queue
+}
+
+volumeSlider.oninput =  function() {
+    let newVol = parseInt(this.value) * 0.01;
+    let displayPercent = (newVol / 0.5 * 100).toFixed(0)
+    Howler.volume(newVol);
+    document.getElementById("VolumeLabel").innerHTML = `Volume: ${displayPercent}%`;
 }
 
 function queueToBoard(){
