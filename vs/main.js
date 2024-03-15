@@ -65,7 +65,7 @@ let cobra = new Bot(app2, seed, seed, worker);
 
 
 function reset(){
-    if (!gameRunning && !gameOver) return;
+    if (gameRunning || !gameOver) return;
 
     document.removeEventListener('keydown', restart);
 
