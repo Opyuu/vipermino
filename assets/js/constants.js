@@ -58,6 +58,13 @@ for(let i = 0; i <= 8; i++){
     PIECE_TEXTURE.push(texture);
 }
 
+for(let i = 1; i <= 8; i++){
+    const show = new PIXI.Rectangle(i * 32, 0, 32, 32);
+    CONNECTED_TEXTURES[i][4] = new PIXI.Texture(basePieceTexture, show);
+}
+
+
+
 for (let i = 0; i < 8; i++){
     const baseTexture = PIXI.Texture.from('/vipermino/assets/sprites/connectedshadow.png');
     PV_TEXTURE[i + 1] = [];

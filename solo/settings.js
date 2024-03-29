@@ -102,6 +102,7 @@ function parseFumen(fumen, board){
             let y = 22 - Math.floor(newPos / 10);
             if(y < 0) return; // Last piece
             board[x][y].type = FUMEN_PIECE[pieceType];
+            board[x][y].mino = 4;
         }
         minoCounter = minoCounter + pieceCount;
     }
