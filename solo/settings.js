@@ -1,7 +1,5 @@
 const volumeSlider = document.getElementById("Volume");
 
-
-
 function toggleSetting(){
     if (!showSetting){
         showSetting = true;

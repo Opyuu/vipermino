@@ -23,6 +23,8 @@ const ppsOutput = document.getElementById("PPSlimit");
 const depthSlider = document.getElementById("DepthSlider");
 const depthOutput = document.getElementById("Depth");
 
+Howler.volume(0.2);
+
 
 let controls = {
     "DAS": "100",
@@ -427,10 +429,7 @@ worker.onmessage = (e) => {
         }
         cobra.drawPV(e.data.pv.slice(1));
 
-        let sum = cobra.state.garbageQueue.reduce((temp, a) => temp + a, 0);
-        console.log("Garbage sum:", sum);
-
-        worker.postMessage({type: 'suggest', depth: playingDepth, garbage: sum});
+        worker.postMessage({type: 'suggest', depth: playingDepth, garbage: cobra.state.garbageQueue});
         waiting = true;
     }, duration)
 }

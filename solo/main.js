@@ -36,6 +36,8 @@ let showSetting = false;
 let quit = false;
 let fumen = "";
 
+Howler.volume(0.2);
+
 function init(){
     game.init();
     drawBorder(game);

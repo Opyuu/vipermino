@@ -1,3 +1,5 @@
+const volumeSlider = document.getElementById("Volume");
+
 function change(button){
     const changeSetting = (e) => {
         e.preventDefault();
@@ -125,4 +127,11 @@ PPSslider.oninput = function() {
 depthSlider.oninput = function() {
     depthOutput.innerHTML = "Depth: " + this.value;
     depth = parseInt(this.value);
+}
+
+volumeSlider.oninput =  function() {
+    let newVol = parseInt(this.value) * 0.01;
+    let displayPercent = (newVol / 0.5 * 100).toFixed(0)
+    Howler.volume(newVol);
+    document.getElementById("VolumeLabel").innerHTML = `Volume: ${displayPercent}%`;
 }
