@@ -142,7 +142,7 @@ worker.onmessage = (e) => {
     if (gameRunning === false) return;
     if (e.data.value === 0) return;
     if (e.data.type !== 'suggestion') return;
-    
+
     game.drawPV(e.data.pv);
 
     const move = e.data.move.location;
