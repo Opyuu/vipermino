@@ -78,6 +78,8 @@ class GameState{
     garbageQueue = [];
     outgoingGarbage = [];
     pow = false;
+    b2b = -1;
+    combo = -1;
 
     heldPiece = piece_T.NO_PIECE;
     activePiece;
