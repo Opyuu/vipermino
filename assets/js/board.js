@@ -1,4 +1,4 @@
-function tetrioDamcalc(clear, tspin, combo, b2b){
+function tetrioDamcalc(clear, tspin, combo, b2b, useS2){
     combo += 1;
     b2b += 1;
     let lines = 0;
@@ -48,15 +48,18 @@ function tetrioDamcalc(clear, tspin, combo, b2b){
     }
 
     if (clear > 0 && b2b > 1){
-        const a = tetrioAttackTable.BACKTOBACK_BONUS *
-            (Math.floor(1 + Math.log1p(
-                (b2b - 1) * tetrioAttackTable.BACKTOBACK_BONUS_LOG)) +
-                   ( (b2b - 1 === 1)
-                    ? 0
-                    : (1 + Math.log1p((b2b - 1) * tetrioAttackTable.BACKTOBACK_BONUS_LOG) % 1) / 3)
-            );
+        if (useS2) lines++;
+        else {
+            const a = tetrioAttackTable.BACKTOBACK_BONUS *
+                (Math.floor(1 + Math.log1p(
+                        (b2b - 1) * tetrioAttackTable.BACKTOBACK_BONUS_LOG)) +
+                    ((b2b - 1 === 1)
+                        ? 0
+                        : (1 + Math.log1p((b2b - 1) * tetrioAttackTable.BACKTOBACK_BONUS_LOG) % 1) / 3)
+                );
 
-        lines += a;
+            lines += a;
+        }
     }
 
     if (combo > 1){
@@ -86,6 +89,8 @@ class GameState{
 
     bagSeedPRNG;
     garbageSeedPRNG;
+
+    useS2 = false;
 
     stats = new Statistics();
 
@@ -166,8 +171,9 @@ class GameState{
     }
 
     checkTspin(tspinInfo){
-        let tspin = tspin_T.NONE;
         if (this.activePiece.type === piece_T.T && tspinInfo.rotated === true){
+            let tspin = tspin_T.NONE;
+
             let out = 0; // Out facing corners, 3 corner rule
             let inc = 0; // In facing corners, 2 corner rule
 
@@ -196,9 +202,28 @@ class GameState{
                     tspin = tspin_T.FULL;
                 }
             }
+
+            return tspin;
         }
 
-        return tspin;
+        if (this.useS2 && tspinInfo.rotated === true) {
+            let testPiece = this.activePiece;
+            let tspin = tspin_T.MINI;
+
+
+            testPiece.x++;
+            if (this.isValid(testPiece)) tspin = tspin_T.NONE;
+            testPiece.x -= 2;
+            if (this.isValid(testPiece)) tspin = tspin_T.NONE;
+
+            testPiece.x++;
+            testPiece.y++;
+            if (this.isValid(testPiece)) tspin = tspin_T.NONE;
+            testPiece.y -= 2;
+            if (this.isValid(testPiece)) tspin = tspin_T.NONE;
+            testPiece.y++;
+            return tspin;
+        }
     }
 
     clearLines(tspinInfo){
@@ -222,12 +247,13 @@ class GameState{
             }
         }
 
-        if ((tspin === tspin_T.FULL && clear) || (tspin === tspin.MINI && clear) || lineCount === 4) {
+        if ((tspin === tspin_T.FULL && clear) || (tspin === tspin_T.MINI && clear) || lineCount === 4) {
             this.b2b++;
         }
         else if (clear){
             if (this.b2b > 2) playerSounds["b2bbreak"].play();
 
+            this.sendSurge();
             this.b2b = -1;
         }
 
@@ -242,7 +268,7 @@ class GameState{
         } else{
             this.combo++;
             if (this.combo > 0) {
-                let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b);
+                let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b, this.useS2);
 
                 if (lines > 5) {
                     this.pow = true;
@@ -256,7 +282,7 @@ class GameState{
             else playerSounds["0combo"].play();
         }
 
-        let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b);
+        let lines = tetrioDamcalc(lineCount, tspin, this.combo, this.b2b, this.useS2);
         this.sendGarbage(lines);
 
         if (this.isEmpty()) {
@@ -367,6 +393,17 @@ class GameState{
 
             lines = Math.max(0, lines);
             this.outgoingGarbage.push(lines);
+        }
+    }
+
+    sendSurge() {
+        if (!this.useS2) return;
+
+        if (this.b2b > 3) {
+            let l = this.b2b;
+            this.sendGarbage(Math.floor(l / 3));
+            this.sendGarbage(Math.floor(l / 3));
+            this.sendGarbage(l - 2 * Math.floor(l / 3));
         }
     }
 

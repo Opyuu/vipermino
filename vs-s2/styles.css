@@ -1,0 +1,132 @@
+#play{
+    position: absolute;
+    left: 5vh;
+    top: 50vh;
+    height: 100px;
+    width: 100px;
+}
+
+#resetButton{
+    position: absolute;
+    left: 5vh;
+    top: 60vh;
+    height: 100px;
+    width: 100px;
+}
+
+#showSetting{
+    position: absolute;
+    left: 5vh;
+    top: 70vh;
+    height: 100px;
+    width: 100px;
+}
+
+body{
+    overflow: hidden;
+    background-color: black;
+}
+
+div{
+    max-width: 50%;
+    display: inline;
+}
+
+#board{
+    position: absolute;
+    left: 0;
+}
+
+#cobraBoard{
+    position: absolute;
+    right: 0;
+}
+
+#settings{
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ff7721; /* Honami */
+    width: 60vw;
+    height: 80vh;
+    overflow-y: auto;
+    padding: 30px;
+    border-radius: 4px;
+    border-color: blue;
+    border-width: 4px;
+}
+
+.buttons{
+    background-color: #ff679a; /* Kohane's colour */
+    font-size: 20px;
+    width: 150px;
+    height: 80px;
+
+    border: none;
+    border-radius: 7px;
+
+    cursor: pointer;
+}
+
+.buttons:hover{
+    background-color: #ee1166; /* VBS's colour */
+}
+
+.settingcontent{
+    font-size: 30px;
+}
+
+.slidercontainer{
+    width: 100%;
+}
+
+.slider{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 40px;
+    background: #d3d3d3;
+    outline: none; /* Remove outline */
+    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 40px; /* Set a specific slider handle width */
+    height: 40px; /* Slider handle height */
+    background: #04AA6D; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+    width: 25px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: #04AA6D; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.controls{
+    color:black;
+    background-color: #bbde22; /* Shiho */
+    border: none;
+    border-radius: 4px;
+    height: 15px;
+}
+
+.controls{
+    color:black;
+    background-color: #bbde22; /* Shiho */
+    border: none;
+    border-radius: 4px;
+    height: 15px;
+}
+
+.controls:hover{
+    background-color: #ffdd45; /* Saki */
+    cursor: pointer;
+}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vipermino</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="../assets/images/icon.png">
+</head>
+<body>
+  <div id="board"></div>
+  <div id="cobraBoard"></div>
+  <button id="play" onclick="start(); this.blur();" class="buttons">Play</button>
+  <button id="showSetting" onclick="toggleSetting(); this.blur();" class="buttons">Settings</button>
+  <button onclick="reset()" id="resetButton" class="buttons">Reset</button>
+
+  <div id="settings">
+    <p class="settingcontent">SETTINGS</p>
+
+    <button onclick="showPlayer()">Controls</button>
+    <button onclick="showBot()">Bot</button>
+    <br> <br>
+
+    <div id="playerSettings">
+      <label class="settingcontent" for="Volume" id="VolumeLabel">Volume: 20%</label>
+      <div class="slidercontainer">
+        <input type="range" min="0" max="100" value="20" class="slider" id="Volume">
+      </div>
+
+      <label for="DAS" class="labels">DAS: (In milliseconds)</label>
+      <input type="number" name="DAS" id="DAS" class="controls">
+      <br><br>
+
+      <label for="ARR" class="labels">ARR: (In milliseconds)</label>
+      <input type="number" name="ARR" id="ARR" class="controls">
+      <br><br>
+
+      <label for="SDARR" class="labels">Soft Drop ARR: (In frames)</label>
+      <input type="number" name="SDARR" id="SDARR" class="controls">
+      <br><br>
+
+      <label for="Move_Left" class="labels">Move Left:</label>
+      <button type="button" id="Move_Left" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Move_Right" class="labels">Move Right:</label>
+      <button type="button" id="Move_Right" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Move_Down" class="labels">Soft Drop:</label>
+      <button type="button" id="Move_Down" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Rotate_CW" class="labels">CW Rotation:</label>
+      <button type="button" id="Rotate_CW" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Rotate_CW_Secondary" class="labels">CW Rotation (Secondary):</label>
+      <button type="button" id="Rotate_CW_Secondary" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Rotate_CCW" class="labels">CCW Rotation:</label>
+      <button type="button" id="Rotate_CCW" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Rotate_CCW_Secondary" class="labels">CCW Rotation (Secondary):</label>
+      <button type="button" id="Rotate_CCW_Secondary" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Rotate_180" class="labels">180 Rotation:</label>
+      <button type="button" id="Rotate_180" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Hold" class="labels">Hold:</label>
+      <button type="button" id="Hold" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Hard_Drop" class="labels">Hard Drop:</label>
+      <button type="button" id="Hard_Drop" class="controls" onclick="change(this)"></button>
+      <br><br>
+
+      <label for="Reset" class="labels">Reset:</label>
+      <button type="button" id="Reset" class="controls" onclick="change(this)"></button>
+      <br><br>
+    </div>
+
+    <div id="botSettings" style="display: none">
+      <h1>Settings will change on the next game start.</h1>
+      <label class="settingcontent" for="PPSSlider" id="PPSlimit">PPS limit: 1</label>
+      <div class="slidercontainer">
+        <input type="range" step="0.1" min="0.5" max="5" value="1" class="slider" id="PPSSlider">
+      </div>
+      <br>
+      <label class="settingcontent" for="DepthSlider" id="Depth">Depth: 5</label>
+      <div class="slidercontainer">
+        <input type="range" min="5" max="10" value="5" class="slider" id="DepthSlider">
+      </div>
+      <br><br>
+    </div>
+
+    <button class="buttons" onclick="toggleSetting()">Save & Close</button>
+  </div>
+
+</body>
+<script type="text/javascript" src="../assets/js/header.js"></script>
+
+<script type="text/javascript" src="../assets/js/piece.js"></script>
+<script type="text/javascript" src="../assets/js/pixi.min.js"></script>
+<script type="text/javascript" src="../assets/js/howler.js"></script>
+<script type="text/javascript" src="../assets/js/sounds.js"></script>
+<script type="text/javascript" src="../assets/js/constants.js"></script>
+<script type="text/javascript" src="../assets/js/kicks.js"></script>
+<script type="text/javascript" src="../assets/js/board.js"></script>
+<script type="text/javascript" src="../assets/js/game.js"></script>
+<script type="text/javascript" src="../assets/js/render.js"></script>
+
+
+<script type="text/javascript" src="../assets/js/player.js"></script>
+<script type="text/javascript" src="../assets/js/bot.js"></script>
+<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="settings.js"></script>
+
+
+</html>
